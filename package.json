@@ -1,0 +1,28 @@
+{
+  "name": "ngHttp",
+  "version": "2.0.0-pre-1",
+  "description": "Http module for Angular 2.0",
+  "main": "src/http.js",
+  "homepage": "https://github.com/angular/ngHttp",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angular/ngHttp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/angular/ngHttp/issues"
+  },
+  "dependencies": {
+    "traceur": "0.0.20",
+    "es6-shim": "~0.9.2"
+  },
+  "devDependencies": {
+    "pipe": "git://github.com/angular/pipe#karma-jasmine-2",
+    "gulp-connect": "~0.3.0",
+    "require": "~0.5.0"
+  },
+  "scripts": {
+    "test": "karma start --single-run"
+  },
+  "author": "Jeff Cross <middlefloor@gmail.com>",
+  "license": "Apache-2.0"
+}

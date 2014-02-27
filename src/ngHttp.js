@@ -1,6 +1,6 @@
 class Http {
   constructor () {
-    console.log('hello');
+
   }
 }
 

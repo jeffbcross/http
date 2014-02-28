@@ -1,11 +1,11 @@
-import {Injector} from '../node_modules/di/src/injector';
-import {Inject, Provide, SuperConstructor} from '../node_modules/di/src/annotations';
+import {Inject} from '../node_modules/di/src/annotations';
 import {$Window} from '../src/Window';
 
 @Inject($Window)
-class HttpBackend {
+class $HttpBackend {
   constructor($window) {
     this.xhr = new $window.XMLHttpRequest();
+    this.$window_ = $window;
   }
 
   open(method, url) {
@@ -13,4 +13,4 @@ class HttpBackend {
   }
 }
 
-export {HttpBackend};
+export {$HttpBackend};

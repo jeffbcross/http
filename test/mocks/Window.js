@@ -3,9 +3,13 @@ import {$Window} from '../../src/Window';
 
 @Provide($Window)
 class $MockWindow {
-  constructor() {
+  constructor () {
     this.XMLHttpRequest = function () {};
+  }
+
+  isFile (obj) {
+    return obj instanceof File;
   }
 }
 
-export {$MockWindow};
+export {$MockWindow}

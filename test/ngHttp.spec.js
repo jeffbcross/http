@@ -1,7 +1,8 @@
 import {$Http} from '../src/ngHttp';
 import {$HttpBackend} from '../src/HttpBackend';
-
 import {$MockHttpBackend} from './mocks/HttpBackend';
+import {$Window} from '../src/Window';
+import {$MockWindow} from './mocks/Window';
 
 import {Injector} from '../node_modules/di/src/injector';
 import {inject, use} from '../node_modules/di/src/testing';
@@ -9,77 +10,78 @@ import {inject, use} from '../node_modules/di/src/testing';
 
 describe('Http', function () {
   describe('$http', function () {
-    var $http;
+    var $httpBackend, $http, $window;
 
     beforeEach(function () {
       use($MockHttpBackend);
+      use($MockWindow);
     });
 
-    afterEach(inject($HttpBackend, function ($httpBackend) {
+    beforeEach(inject($HttpBackend, $Http, $Window, function(_$httpBackend_, _$http_, _$window_) {
+      $httpBackend = _$httpBackend_;
+      $http = _$http_;
+      $window = _$window_;
+    }));
+
+    afterEach(function () {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
-    }));
+    });
 
 
-    it('should be defined', inject($Http, function($http) {
-      expect($http).toBeDefined();
-    }));
-
-
-    it('should perform a basic GET request', inject($HttpBackend, $Http, function($httpBackend, $http) {
+    it('should perform a basic GET request', function() {
       $httpBackend.expect('GET', '/url').respond('');
       $http.req({url: '/url', method: 'GET'});
-    }));
+    });
 
 
-    it('should pass data if specified', inject($HttpBackend, $Http, function($httpBackend, $http) {
+    it('should pass data if specified', function() {
       $httpBackend.expect('POST', '/url', 'some-data').respond('');
       $http.req({url: '/url', method: 'POST', data: 'some-data'});
-    }));
+    });
 
 
     describe('params', function() {
       it('should do basic request with params and encode',
-          inject($HttpBackend, $Http, function($httpBackend, $http) {
+          function() {
             $httpBackend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
             $http.req({url: '/url', params: {'a=':'?&', b:2}, method: 'GET'});
-          }));
+          });
 
 
-      it('should merge params if url contains some already', inject($HttpBackend, $Http, function($httpBackend, $http) {
+      it('should merge params if url contains some already', function() {
         $httpBackend.expect('GET', '/url?c=3&a=1&b=2').respond('');
         $http.req({url: '/url?c=3', params: {a:1, b:2}, method: 'GET'});
-      }));
+      });
 
 
-      it('should jsonify objects in params map', inject($HttpBackend, $Http, function($httpBackend, $http) {
+      it('should jsonify objects in params map', function() {
         $httpBackend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
         $http.req({url: '/url', params: {a:1, b:{c:3}}, method: 'GET'});
-      }));
+      });
 
 
-      it('should expand arrays in params map', inject($HttpBackend, $Http, function($httpBackend, $http) {
+      it('should expand arrays in params map', function() {
           $httpBackend.expect('GET', '/url?a=1&a=2&a=3').respond('');
           $http.req({url: '/url', params: {a: [1,2,3]}, method: 'GET'});
-      }));
+      });
 
 
-      it('should not encode @ in url params', inject($HttpBackend, $Http, function($httpBackend, $http) {
+      it('should not encode @ in url params', function() {
         //encodeURIComponent is too agressive and doesn't follow http://www.ietf.org/rfc/rfc3986.txt
         //with regards to the character set (pchar) allowed in path segments
         //so we need this test to make sure that we don't over-encode the params and break stuff
 
         $httpBackend.expect('GET', '/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
         $http.req({url: '/Path', params: {':bar': '$baz@1', '!do&h': 'g=a h'}, method: 'GET'});
-      }));
+      });
     });
 
-    /*
-    describe('callbacks', function() {
 
+    /*describe('callbacks', function() {
       it('should pass in the response object when a request is successful', function() {
         $httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
-        $http({url: '/url', method: 'GET'}).then(function(response) {
+        $http.req({url: '/url', method: 'GET'}).then(function(response) {
           expect(response.data).toBe('my content');
           expect(response.status).toBe(207);
           expect(response.headers()).toEqual({'content-encoding': 'smurf'});
@@ -153,12 +155,17 @@ describe('Http', function () {
           expect(httpPromise.error(callback)).toBe(httpPromise);
         });
       });
-    });
+    });*/
 
-
+    /*
     describe('response headers', function() {
+      var callback;
 
-      it('should return single header', function() {
+      beforeEach(function () {
+        callback = jasmine.createSpy();
+      });
+
+      iit('should return single header', function() {
         $httpBackend.expect('GET', '/url').respond('', {'date': 'date-val'});
         callback.andCallFake(function(r) {
           expect(r.headers('date')).toBe('date-val');
@@ -212,9 +219,9 @@ describe('Http', function () {
         $httpBackend.flush();
         expect(callback).toHaveBeenCalledOnce();
       });
-    });
+    });*/
 
-
+    /*
     describe('response headers parser', function() {
 
       it('should parse basic', function() {
@@ -559,28 +566,28 @@ describe('Http', function () {
 
         $exceptionHandler.errors = [];
       }));
-    });
+    });*/
 
 
     describe('transformData', function() {
-
       describe('request', function() {
-
         describe('default', function() {
-
           it('should transform object into json', function() {
             $httpBackend.expect('POST', '/url', '{"one":"two"}').respond('');
-            $http({method: 'POST', url: '/url', data: {one: 'two'}});
+            $http.req({method: 'POST', url: '/url', data: {one: 'two'}});
           });
 
 
           it('should ignore strings', function() {
             $httpBackend.expect('POST', '/url', 'string-data').respond('');
-            $http({method: 'POST', url: '/url', data: 'string-data'});
+            $http.req({method: 'POST', url: '/url', data: 'string-data'});
           });
 
-
-          it('should ignore File objects', function() {
+          /**
+            * Needs a proper equality comparison, as well as real isFile method
+            * on $window - @jeffbcross 3/4/14
+            */
+          /*it('should ignore File objects', function() {
             var file = {
               some: true,
               // $httpBackend compares toJson values by default,
@@ -590,17 +597,17 @@ describe('Http', function () {
               }
             };
 
-            // I'm really sorry for doing this :-D
-            // Unfortunatelly I don't know how to trick toString.apply(obj) comparison
-            spyOn(window, 'isFile').andReturn(true);
+            spyOn($window, 'isFile').and.returnValue(true);
 
             $httpBackend.expect('POST', '/some', file).respond('');
-            $http({method: 'POST', url: '/some', data: file});
-          });
+            $http.req({method: 'POST', url: '/some', data: file});
+          });*/
         });
 
 
-        it('should have access to request headers', function() {
+        /*it('should have access to request headers', function() {
+          var callback = jasmine.createSpy();
+
           $httpBackend.expect('POST', '/url', 'header1').respond(200);
           $http.post('/url', 'req', {
             headers: {h1: 'header1'},
@@ -610,11 +617,11 @@ describe('Http', function () {
           }).success(callback);
           $httpBackend.flush();
 
-          expect(callback).toHaveBeenCalledOnce();
-        });
+          expect(callback.calls.count()).toBe(1);
+        });*/
 
 
-        it('should pipeline more functions', function() {
+        /*it('should pipeline more functions', function() {
           function first(d, h) {return d + '-first' + ':' + h('h1')}
           function second(d) {return uppercase(d)}
 
@@ -625,11 +632,11 @@ describe('Http', function () {
           }).success(callback);
           $httpBackend.flush();
 
-          expect(callback).toHaveBeenCalledOnce();
-        });
+          expect(callback.calls.count()).toBe(1);
+        });*/
       });
 
-
+      /*
       describe('response', function() {
 
         describe('default', function() {
@@ -710,10 +717,10 @@ describe('Http', function () {
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0]).toBe('RESP-FIRST:V1');
         });
-      });
+      });*/
     });
 
-
+    /*
     describe('cache', function() {
 
       var cache;

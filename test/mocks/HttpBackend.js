@@ -1,6 +1,9 @@
 import {$HttpBackend} from '../../src/HttpBackend';
 import {$Http, $Connection} from '../../src/ngHttp';
 import {Inject, Provide} from '../../node_modules/di/src/annotations';
+import {MockXhr} from './Xhr';
+import {MockHttpExpectation} from './HttpExpectation';
+import {MockHttpResponse} from './HttpResponse';
 
 @Provide($HttpBackend)
 export class $MockHttpBackend {
@@ -8,6 +11,7 @@ export class $MockHttpBackend {
     this.outStandingRequests = [];
     this.outStandingFlush = [];
     this.expectations = [];
+    this.responses;
   }
 
   expect (method, url, data, headers) {
@@ -16,13 +20,22 @@ export class $MockHttpBackend {
 
     return {
       respond: function (status, data, headers) {
-        expectation.response = new MockResponse(status, data, headers);
+        expectation.response = new MockHttpResponse(status, data, headers);
       }
     };
   }
 
   flush () {
-    var i, flushTuple;
+    var i, flushTuple, expectation;
+
+    if (!this.responses.length) throw new Error('No pending requests to flush');
+
+    while(expectation = this.expectations.shift()) {
+      if (expectation.response) {
+        expectation.response.respond();
+      }
+    }
+
     for (i = 0; i < this.outStandingFlush.length; i++) {
       flushTuple = this.outStandingFlush[i];
 
@@ -78,25 +91,3 @@ export class $MockHttpBackend {
   }
 }
 
-class MockHttpExpectation {
-  constructor(method, url, data, headers) {
-    this.method = method;
-    this.url = url;
-    this.data = data;
-    this.headers = headers;
-  }
-}
-
-class MockResponse extends Array {
-  constructor(status, data, headers) {
-    if (typeof status === 'function') {
-      this.splice(0, 0, status);
-    }
-    else if (typeof status === 'number') {
-      this.splice(0, 0, [status, data, headers]);
-    }
-    else {
-      this.splice(0, 0, [200, status, data])
-    }
-  }
-}

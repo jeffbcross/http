@@ -25,7 +25,7 @@ describe('Http', function () {
 
     afterEach(function () {
       $httpBackend.verifyNoOutstandingExpectation();
-      $httpBackend.verifyNoOutstandingRequest();
+      // $httpBackend.verifyNoOutstandingRequest();
     });
 
 
@@ -79,9 +79,11 @@ describe('Http', function () {
 
 
     /*describe('callbacks', function() {
-      it('should pass in the response object when a request is successful', function() {
+      iit('should pass in the response object when a request is successful', function() {
+        var callback = jasmine.createSpy();
         $httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
         $http.req({url: '/url', method: 'GET'}).then(function(response) {
+          console.log('then(response)', response);
           expect(response.data).toBe('my content');
           expect(response.status).toBe(207);
           expect(response.headers()).toEqual({'content-encoding': 'smurf'});
@@ -90,13 +92,13 @@ describe('Http', function () {
         });
 
         $httpBackend.flush();
-        expect(callback).toHaveBeenCalledOnce();
+        expect(callback.calls.count()).toBe(1);
       });
 
 
-      it('should pass in the response object when a request failed', function() {
+      xit('should pass in the response object when a request failed', function() {
         $httpBackend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
-        $http({url: '/url', method: 'GET'}).then(null, function(response) {
+        $http({url: '/url', method: 'GET'}).promise.then(null, function(response) {
           expect(response.data).toBe('bad error');
           expect(response.status).toBe(543);
           expect(response.headers()).toEqual({'request-id': '123'});
@@ -110,7 +112,7 @@ describe('Http', function () {
 
 
       describe('success', function() {
-        it('should allow http specific callbacks to be registered via "success"', function() {
+        xit('should allow http specific callbacks to be registered via "success"', function() {
           $httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
           $http({url: '/url', method: 'GET'}).success(function(data, status, headers, config) {
             expect(data).toBe('my content');
@@ -125,7 +127,7 @@ describe('Http', function () {
         });
 
 
-        it('should return the original http promise', function() {
+        xit('should return the original http promise', function() {
           $httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
           var httpPromise = $http({url: '/url', method: 'GET'});
           expect(httpPromise.success(callback)).toBe(httpPromise);
@@ -134,7 +136,7 @@ describe('Http', function () {
 
 
       describe('error', function() {
-        it('should allow http specific callbacks to be registered via "error"', function() {
+        xit('should allow http specific callbacks to be registered via "error"', function() {
           $httpBackend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
           $http({url: '/url', method: 'GET'}).error(function(data, status, headers, config) {
             expect(data).toBe('bad error');
@@ -149,7 +151,7 @@ describe('Http', function () {
         });
 
 
-        it('should return the original http promise', function() {
+        xit('should return the original http promise', function() {
           $httpBackend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
           var httpPromise = $http({url: '/url', method: 'GET'});
           expect(httpPromise.error(callback)).toBe(httpPromise);

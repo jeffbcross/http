@@ -50,8 +50,8 @@ export class MockHttpExpectation {
   match(method, url, data, headers) {
     if (this.method != method) return false;
     if (!this.matchUrl(url)) return false;
-    if (angular.isDefined(data) && !this.matchData(data)) return false;
-    if (angular.isDefined(headers) && !this.matchHeaders(headers)) return false;
+    if (typeof data !== 'undefined' && !this.matchData(data)) return false;
+    if (typeof headers !== 'undefined' && !this.matchHeaders(headers)) return false;
     return true;
   }
 
@@ -72,7 +72,7 @@ export class MockHttpExpectation {
     if (typeof this.data === 'undefined') return true;
     if (this.data && typeof this.data.test === 'function') return this.data.test(data);
     if (this.data && typeof this.data === 'function') return this.data(data);
-    if (this.data && typeof this.data !== 'string') return angular.equals(this.data, angular.fromJson(data));
+    if (this.data && typeof this.data !== 'string') return Utils.objectEquals(this.data, JSON.parse(data));
     return this.data == data;
   }
 

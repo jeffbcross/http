@@ -10,17 +10,22 @@
  *    };
  *  }
  */
-export class MockHttpResponse extends Array {
+export class MockHttpResponse {
   constructor(status, data, headers) {
+    this.list = [];
     if (typeof status === 'function') {
-      this.splice(0, 0, status);
+      this.list.splice(0, 0, status);
     }
     else if (typeof status === 'number') {
-      this.splice(0, 0, [status, data, headers]);
+      this.list.splice(0, 0, [status, data, headers]);
     }
     else {
-      this.splice(0, 0, [200, status, data])
+      this.list.splice(0, 0, [200, status, data])
     }
+  }
+
+  respond() {
+    return this.list;
   }
 }
 

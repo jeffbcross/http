@@ -1,7 +1,7 @@
 import {$HttpBackend} from '../src/HttpBackend';
-import {Injector} from '../node_modules/di/src/injector';
+import {Injector} from 'di/injector';
 import {$MockWindow} from './mocks/Window';
-import {use, inject} from '../node_modules/di/src/testing';
+import {use, inject} from 'di/testing';
 
 describe('$HttpBackend', function () {
   var $httpBackend;

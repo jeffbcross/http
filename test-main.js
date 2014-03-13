@@ -16,8 +16,14 @@ require.config({
   // Karma serves files under /base, which is the basePath from your config file
   baseUrl: '/base',
 
+  paths: {
+    'q': './node_modules/di/node_modules/q/q',
+    'di': './node_modules/di/src',
+    'assert': './node_modules/assert/dist/amd/assert'
+  },
+
   // Dynamically load all test files and ES6 polyfill.
-  deps: allTestFiles.concat(['node_modules/es6-shim/es6-shim', 'test/matchers']),
+  deps: allTestFiles.concat(['node_modules/di/node_modules/es6-shim/es6-shim', 'test/matchers']),
 
   // we have to kickoff jasmine, as it is asynchronous
   callback: window.__karma__.start

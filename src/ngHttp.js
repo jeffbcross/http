@@ -1,6 +1,6 @@
 import {$Connection} from './Connection';
 import {$HttpBackend} from './HttpBackend';
-import {Inject} from '../node_modules/di/src/annotations';
+import {Inject} from 'di/annotations';
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
 

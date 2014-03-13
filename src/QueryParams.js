@@ -10,7 +10,6 @@ export class $QueryParams {
    * Set a parameter to new value of any type.
    */
   set (key:String, value) {
-    assert(value);
     this.params[key] = value;
   }
 

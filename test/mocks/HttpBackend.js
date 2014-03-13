@@ -1,6 +1,6 @@
 import {$HttpBackend} from '../../src/HttpBackend';
 import {$Http, $Connection} from '../../src/ngHttp';
-import {Inject, Provide} from '../../node_modules/di/src/annotations';
+import {Inject, Provide} from 'di/annotations';
 import {MockXhr} from './Xhr';
 import {MockHttpExpectation} from './HttpExpectation';
 import {MockHttpResponse} from './HttpResponse';

@@ -4,8 +4,8 @@ import {$MockHttpBackend} from './mocks/HttpBackend';
 import {$Window} from '../src/Window';
 import {$MockWindow} from './mocks/Window';
 
-import {Injector} from '../node_modules/di/src/injector';
-import {inject, use} from '../node_modules/di/src/testing';
+import {Injector} from 'di/injector';
+import {inject, use} from 'di/testing';
 
 
 describe('Http', function () {

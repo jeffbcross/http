@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "traceur": "0.0.20",
-    "es6-shim": "~0.9.2",
     "di": "~2.0.0-pre-2"
   },
   "devDependencies": {
-    "pipe": "git://github.com/angular/pipe#karma-jasmine-2",
+    "pipe": "angular/pipe",
+    "assert": "angular/assert#dist",
     "gulp-connect": "~0.3.0",
     "require": "~0.5.0"
   },

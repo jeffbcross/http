@@ -3,6 +3,25 @@ export class $QueryParams {
     this.params = params;
   }
 
+  get () {
+
+  }
+  /**
+   * Set a parameter to new value of any type.
+   */
+  set (key:String, value) {
+    assert(value);
+    this.params[key] = value;
+  }
+
+  unset (key:String, value) {
+
+  }
+
+  /**
+   * Serialize the parameters into a queryString, including the leading "?" or
+   * "&". If isAppended is truthy, the queryString should begin with "&".
+   */
   toQueryString (isAppended) {
     var queryString, orderedKeys, key, encodedKey, value;
     if (!this.params) return '';

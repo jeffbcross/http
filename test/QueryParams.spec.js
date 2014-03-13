@@ -42,6 +42,26 @@ describe('$QueryParams', function() {
   });
 
 
+  describe('.set()', function() {
+    it('should set a parameter to the new value', function() {
+      var queryParams = new $QueryParams({user: 'jeff'});
+      expect(queryParams.params).toEqual({user: 'jeff'});
+      queryParams.set('user', 'misko');
+      expect(queryParams.params).toEqual({user: 'misko'});
+    });
+
+
+    it('should complain if no value provided', function() {
+      var queryParams = new $QueryParams({user: 'jeff'});
+      expect(function() {
+        queryParams.set('user');
+      }).
+      toThrow()
+
+    });
+  });
+
+
   describe('._encodeValue()', function() {
     it('should urlEncode value', function() {
       expect($QueryParams._encodeValue('http://%.com')).

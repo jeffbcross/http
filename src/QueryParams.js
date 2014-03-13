@@ -11,25 +11,29 @@ export class $QueryParams {
     orderedKeys = Object.keys(this.params).sort();
 
     while (key = orderedKeys.shift()) {
-      encodedKey = this.encodeValue(key);
+      encodedKey = $QueryParams._encodeValue(key);
       queryString += encodedKey;
       queryString += '=';
       value = this.params[key];
 
 
-      queryString += this.encodeValue(value, encodedKey);
+      queryString += $QueryParams._encodeValue(value, encodedKey);
       queryString += orderedKeys.length ? '&' : '';
     }
 
     return queryString;
   }
 
-  encodeValue (value, encodedKey) {
+  static _encodeValue (value, encodedKey:String) {
     var iVal, i, queryString = '';
     if (Array.isArray(value)) {
+      if (!encodedKey) {
+        throw new Error('Missing 2nd argument: "encodedKey"');
+      }
+
       for (i = 0; i < value.length; i++) {
         iVal = value[i];
-        queryString += this.encodeValue(iVal);
+        queryString += $QueryParams._encodeValue(iVal);
         if (i + 1 < value.length) queryString += '&' + encodedKey + '=';
       }
 

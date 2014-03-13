@@ -25,7 +25,6 @@ describe('Http', function () {
 
     afterEach(function () {
       $httpBackend.verifyNoOutstandingExpectation();
-      // $httpBackend.verifyNoOutstandingRequest();
     });
 
 
@@ -38,43 +37,6 @@ describe('Http', function () {
     it('should pass data if specified', function() {
       $httpBackend.expect('POST', '/url', 'some-data').respond('');
       $http.req({url: '/url', method: 'POST', data: 'some-data'});
-    });
-
-
-    describe('params', function() {
-      it('should do basic request with params and encode',
-          function() {
-            $httpBackend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
-            $http.req({url: '/url', params: {'a=':'?&', b:2}, method: 'GET'});
-          });
-
-
-      it('should merge params if url contains some already', function() {
-        $httpBackend.expect('GET', '/url?c=3&a=1&b=2').respond('');
-        $http.req({url: '/url?c=3', params: {a:1, b:2}, method: 'GET'});
-      });
-
-
-      it('should jsonify objects in params map', function() {
-        $httpBackend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
-        $http.req({url: '/url', params: {a:1, b:{c:3}}, method: 'GET'});
-      });
-
-
-      it('should expand arrays in params map', function() {
-          $httpBackend.expect('GET', '/url?a=1&a=2&a=3').respond('');
-          $http.req({url: '/url', params: {a: [1,2,3]}, method: 'GET'});
-      });
-
-
-      it('should not encode @ in url params', function() {
-        //encodeURIComponent is too agressive and doesn't follow http://www.ietf.org/rfc/rfc3986.txt
-        //with regards to the character set (pchar) allowed in path segments
-        //so we need this test to make sure that we don't over-encode the params and break stuff
-
-        $httpBackend.expect('GET', '/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
-        $http.req({url: '/Path', params: {':bar': '$baz@1', '!do&h': 'g=a h'}, method: 'GET'});
-      });
     });
 
 

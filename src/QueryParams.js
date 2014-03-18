@@ -1,4 +1,4 @@
-export class $QueryParams {
+export class $QueryParams extends Map {
   constructor (params) {
     this.params = params;
   }

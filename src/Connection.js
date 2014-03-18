@@ -1,5 +1,8 @@
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
+import {$Promise} from './Promise';
+import {Inject} from 'di/annotations';
+import {Injector} from 'di/injector';
 
 /**
  * Manages state and properties of a single connection
@@ -19,19 +22,38 @@ export class $Connection {
     this.params = params;
     this.data_ = data;
     this.data = data.serialize();
+
+    this.promise = new $Promise(function(resolve, reject) {
+      this.reject = reject;
+      this.resolve = resolve;
+    }.bind(this));
   }
 
-  then(success, failure) {
-    if (typeof success === 'function') {
-      this.promise = new Promise(success, failure);
-    }
-
+  then (resolve, reject) {
+    this.promise.then(resolve, reject);
+    return this;
   }
 
   success(callback) {
-    // this.promise = new Promise(callback);
-    // this.onSuccess = callback;
-    // console.log('connection success', this);
+    this.promise.then(callback);
+  }
+
+  /**
+   * Called when a request is completed, regardless of the status of the
+   * response.
+   */
+  onComplete (res) {
+    if (typeof res !== 'undefined') {
+      this.resolve(res);
+    }
+  }
+
+  error(callback) {
+    this.promise.then(null, callback);
+  }
+
+  send() {
+
   }
 
   /**

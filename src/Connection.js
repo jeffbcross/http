@@ -41,10 +41,14 @@ export class $Connection {
   /**
    * Called when a request is completed, regardless of the status of the
    * response.
+   * TODO: Apply some real logic here.
    */
   onComplete (res) {
     if (typeof res !== 'undefined') {
-      this.resolve(res);
+      this.resolve.call(this.promise, res);
+    }
+    else {
+      this.reject.call(this.promise, res);
     }
   }
 

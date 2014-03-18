@@ -123,13 +123,14 @@ describe('$Connection', function() {
 
 
   describe('.promise', function() {
-    it('should call the then functions in order on success', function (done) {
+    it('should call the then functions in order on success', function () {
       var responses = [];
       var connection = new $Connection(
           'GET',
           '/items',
           sampleParams,
-          sampleRequestData);
+          sampleRequestData,
+          $MockPromise);
       connection.
         then(function(val) {
           responses.push(1);
@@ -138,12 +139,34 @@ describe('$Connection', function() {
           responses.push(2);
         });
       expect(responses).toEqual([]);
+
       connection.onComplete('foo');
-      setTimeout(function () {
-        expect(responses).toEqual([1,2]);
-        done();
-      }, 0);
+      connection.promise.flush();
+      expect(responses).toEqual([1,2]);
     });
+
+
+    it('should call then functions in order on error', function() {
+      var responses = [];
+      var connection = new $Connection(
+          'GET',
+          '/items',
+          sampleParams,
+          sampleRequestData,
+          $MockPromise);
+      connection.
+        then(null, function(val) {
+          responses.push(1);
+        }).
+        then(null, function(val) {
+          responses.push(2);
+        });
+      expect(responses).toEqual([]);
+
+      connection.onComplete(undefined, 'foo');
+      connection.promise.flush();
+      expect(responses).toEqual([1,2]);
+    })
   });
 
 });

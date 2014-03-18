@@ -1,6 +1,5 @@
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
-import {$Promise} from './Promise';
 import {Inject} from 'di/annotations';
 import {Injector} from 'di/injector';
 
@@ -16,14 +15,15 @@ export class $Connection {
       method:string,
       url:string,
       params: $QueryParams,
-      data: $RequestData) {
+      data: $RequestData,
+      MockPromise) {
     this.method = method;
     this.url = url;
     this.params = params;
     this.data_ = data;
     this.data = data.serialize();
 
-    this.promise = new $Promise(function(resolve, reject) {
+    this.promise = new (MockPromise || Promise)(function(resolve, reject) {
       this.reject = reject;
       this.resolve = resolve;
     }.bind(this));

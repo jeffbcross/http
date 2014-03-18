@@ -14,7 +14,7 @@ export class $Http {
     var connection = new $Connection (
         config.method,
         config.url,
-        new $QueryParams(config.params),
+        new $QueryParams(config.params || {}),
         new $RequestData(config.data)
     );
 

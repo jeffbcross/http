@@ -1,4 +1,5 @@
 import {$HttpBackend} from '../../src/HttpBackend';
+import {$Connection} from '../../src/Connection';
 import {$Http, $Connection} from '../../src/ngHttp';
 import {Inject, Provide} from 'di/annotations';
 import {MockXhr} from './Xhr';
@@ -34,7 +35,7 @@ export class $MockHttpBackend {
     this.outStandingRequests[this.outStandingRequests.length - 1].response = res;
   }
 
-  request(connection: $Connection) {
+  request(connection) {
     var req;
 
     for (var i = 0; i < this.outStandingRequests.length; i++) {

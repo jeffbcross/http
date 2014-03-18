@@ -1,5 +1,5 @@
 export class $QueryParams {
-  constructor (params: Object) {
+  constructor (params) {
     this.params = params;
   }
 
@@ -9,11 +9,15 @@ export class $QueryParams {
   /**
    * Set a parameter to new value of any type.
    */
-  set (key:String, value) {
+  set (key:string, value:string) {
     this.params[key] = value;
   }
 
-  unset (key:String, value) {
+  setArray (key:string, value) {
+
+  }
+
+  unset (key:string, value) {
 
   }
 
@@ -42,7 +46,7 @@ export class $QueryParams {
     return queryString;
   }
 
-  static _encodeValue (value, encodedKey:String) {
+  static _encodeValue (value, encodedKey) {
     var iVal, i, queryString = '';
     if (Array.isArray(value)) {
       if (!encodedKey) {

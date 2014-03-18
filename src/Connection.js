@@ -10,8 +10,8 @@ import {$RequestData} from './RequestData';
  */
 export class $Connection {
   constructor(
-      method: String,
-      url: String,
+      method:string,
+      url:string,
       params: $QueryParams,
       data: $RequestData) {
     this.method = method;

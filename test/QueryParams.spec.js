@@ -80,7 +80,7 @@ describe('$QueryParams', function() {
       expect(function () {
         $QueryParams._encodeValue(['jeff', 'igor', 'tobias']);
       }).
-      toThrow(new Error('Missing 2nd argument: "encodedKey"'));
+      toThrow();
     });
   });
 });

@@ -1,13 +1,10 @@
-import {$XHRConnection} from './Connection';
-import {$HttpBackend} from './HttpBackend';
+import {$XHRConnection} from './XHRConnection';
 import {Inject} from 'di/annotations';
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
 
-@Inject($HttpBackend)
 export class $Http {
-  constructor ($httpBackend) {
-    this.backend_ = $httpBackend;
+  constructor () {
   }
 
   req (config) {
@@ -17,8 +14,6 @@ export class $Http {
         new $QueryParams(config.params || {}),
         new $RequestData(config.data)
     );
-
-    this.backend_.request(connection);
 
     return connection;
   }

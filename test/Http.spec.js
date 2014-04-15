@@ -1,26 +1,15 @@
 import {$Http} from '../src/ngHttp';
-import {$HttpBackend} from '../src/HttpBackend';
-import {$MockHttpBackend} from './mocks/HttpBackend';
-import {$Window} from '../src/Window';
-import {$MockWindow} from './mocks/Window';
-
 import {Injector} from 'di/injector';
 import {inject, use} from 'di/testing';
 
 
 describe('Http', function () {
   describe('$http', function () {
-    var $httpBackend, $http, $window;
+    var $httpBackend, $http;
 
-    beforeEach(function () {
-      use($MockHttpBackend);
-      use($MockWindow);
-    });
 
-    beforeEach(inject($HttpBackend, $Http, $Window, function(_$httpBackend_, _$http_, _$window_) {
-      $httpBackend = _$httpBackend_;
+    beforeEach(inject($Http, function(_$http_) {
       $http = _$http_;
-      $window = _$window_;
     }));
 
     afterEach(function () {
@@ -549,7 +538,7 @@ describe('Http', function () {
 
           /**
             * Needs a proper equality comparison, as well as real isFile method
-            * on $window - @jeffbcross 3/4/14
+            * on window - @jeffbcross 3/4/14
             */
           /*it('should ignore File objects', function() {
             var file = {
@@ -561,7 +550,7 @@ describe('Http', function () {
               }
             };
 
-            spyOn($window, 'isFile').and.returnValue(true);
+            spyOn(window, 'isFile').and.returnValue(true);
 
             $httpBackend.expect('POST', '/some', file).respond('');
             $http.req({method: 'POST', url: '/some', data: file});

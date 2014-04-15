@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "traceur": "0.0.20",
-    "di": "~2.0.0-pre-2"
+    "di": "~2.0.0-pre-2",
+    "deferred": "git://github.com/jeffbcross/deferred",
+    "zone.js": "git://github.com/angular/zone.js"
   },
   "devDependencies": {
     "pipe": "angular/pipe",

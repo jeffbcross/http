@@ -19,7 +19,8 @@ require.config({
   paths: {
     'q': './node_modules/di/node_modules/q/q',
     'di': './node_modules/di/src',
-    'assert': './node_modules/assert/dist/amd/assert'
+    'assert': './node_modules/rtts-assert/dist/amd/assert',
+    'deferred': './node_modules/deferred/src'
   },
 
   // Dynamically load all test files and ES6 polyfill.

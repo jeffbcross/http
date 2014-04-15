@@ -2,6 +2,7 @@ import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
 import {Inject} from 'di/annotations';
 import {Injector} from 'di/injector';
+import {Deferred} from 'deferred/Deferred';
 
 /**
  * Manages state and properties of a single connection
@@ -10,23 +11,27 @@ import {Injector} from 'di/injector';
  * @param {$QueryParams} params
  * @param {$RequestData} data
  */
-export class $Connection {
+export class $XHRConnection {
   constructor(
       method:string,
       url:string,
       params: $QueryParams,
-      data: $RequestData,
-      MockPromise) {
+      data: $RequestData) {
+    super(function(resolve, reject) {
+      this.reject = reject;
+      this.resolve = resolve;
+    })
     this.method = method;
     this.url = url;
     this.params = params;
     this.data_ = data;
     this.data = data.serialize();
 
-    this.promise = new (MockPromise || Promise)(function(resolve, reject) {
-      this.reject = reject;
-      this.resolve = resolve;
-    }.bind(this));
+    this.xhr_ = new XMLHttpRequest();
+
+    this.xhr_.onerror = this.onError;
+    this.deferred = new Deferred();
+    this.promise = this.deferred.promise;
   }
 
   then (resolve, reject) {
@@ -34,7 +39,7 @@ export class $Connection {
     return this;
   }
 
-  success(callback) {
+  success (callback) {
     this.promise.then(callback);
   }
 
@@ -45,19 +50,30 @@ export class $Connection {
    */
   onComplete (res) {
     if (typeof res !== 'undefined') {
-      this.resolve.call(this.promise, res);
+      this.deferred.resolve(res);
     }
     else {
-      this.reject.call(this.promise, res);
+      this.deferred.reject(res);
     }
+  }
+
+  onError () {
+
   }
 
   error(callback) {
     this.promise.then(null, callback);
   }
 
-  send() {
+  open (method, url) {
+    assert(method, string);
+    this.method = method;
+    this.url = url;
+  }
 
+  send (data) {
+    this.xhr_.open(this.method, this.url);
+    this.xhr_.send(data);
   }
 
   /**

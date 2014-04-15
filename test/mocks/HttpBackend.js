@@ -1,6 +1,6 @@
 import {$HttpBackend} from '../../src/HttpBackend';
-import {$Connection} from '../../src/Connection';
-import {$Http, $Connection} from '../../src/ngHttp';
+import {$XHRConnection} from '../../src/XHRConnection';
+import {$Http} from '../../src/ngHttp';
 import {Inject, Provide} from 'di/annotations';
 import {MockXhr} from './Xhr';
 import {MockHttpExpectation} from './HttpExpectation';

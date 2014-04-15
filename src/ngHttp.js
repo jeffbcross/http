@@ -1,4 +1,4 @@
-import {$Connection} from './Connection';
+import {$XHRConnection} from './Connection';
 import {$HttpBackend} from './HttpBackend';
 import {Inject} from 'di/annotations';
 import {$QueryParams} from './QueryParams';
@@ -11,7 +11,7 @@ export class $Http {
   }
 
   req (config) {
-    var connection = new $Connection (
+    var connection = new $XHRConnection (
         config.method,
         config.url,
         new $QueryParams(config.params || {}),

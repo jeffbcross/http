@@ -3,6 +3,7 @@ import {$RequestData} from './RequestData';
 import {Inject} from 'di/annotations';
 import {Injector} from 'di/injector';
 import {Deferred} from 'deferred/Deferred';
+import {assert} from 'assert';
 
 /**
  * Manages state and properties of a single connection
@@ -13,14 +14,10 @@ import {Deferred} from 'deferred/Deferred';
  */
 export class $XHRConnection {
   constructor(
-      method:string,
-      url:string,
+      method: string,
+      url: string,
       params: $QueryParams,
       data: $RequestData) {
-    super(function(resolve, reject) {
-      this.reject = reject;
-      this.resolve = resolve;
-    })
     this.method = method;
     this.url = url;
     this.params = params;
@@ -66,7 +63,8 @@ export class $XHRConnection {
   }
 
   open (method, url) {
-    assert(method, string);
+    assert.type(method, assert.string);
+    assert(url, assert.string);
     this.method = method;
     this.url = url;
   }

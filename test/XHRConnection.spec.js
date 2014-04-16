@@ -1,6 +1,6 @@
-import {$XHRConnection} from '../src/XHRConnection';
-import {$QueryParams} from '../src/QueryParams';
 import {$RequestData} from '../src/RequestData';
+import {$QueryParams} from '../src/QueryParams';
+import {$XHRConnection} from '../src/XHRConnection';
 import {inject, use} from 'di/testing';
 import {PromiseBackend, PromiseMock} from 'deferred/PromiseMock';
 
@@ -118,7 +118,7 @@ describe('$XHRConnection', function() {
         new $QueryParams(),
         new $RequestData());
       expect(function() {
-        connection.open(null, '/users');
+        connection.open(undefined, '/users');
       }).toThrow();
     });
 

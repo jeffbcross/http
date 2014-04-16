@@ -7,7 +7,7 @@ export class $Http {
   constructor () {
   }
 
-  req (config) {
+  request(config) {
     var connection = new $XHRConnection (
         config.method,
         config.url,
@@ -15,10 +15,13 @@ export class $Http {
         new $RequestData(config.data)
     );
 
+    connection.open(connection.method, connection.url);
+    connection.send(connection.data);
+
     return connection;
   }
 
-  post (url, data, options) {
+  post(url, data, options) {
     return this.req({
       method: 'POST',
       url: url,

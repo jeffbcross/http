@@ -6,16 +6,10 @@ import {Deferred} from 'deferred/Deferred';
 import {assert} from 'assert';
 
 /**
- * Manages state and properties of a single connection
- * @param {$QueryParams} params
- * @param {$RequestData} data
+ * Manages state of a single connection
  */
 export class $XHRConnection {
-  constructor(params:$QueryParams, data:$RequestData) {
-    this.params = params;
-    this.data_ = data;
-    this.data = data.serialize();
-
+  constructor() {
     this.xhr_ = new XMLHttpRequest();
     this.xhr_.addEventListener('load', this.onLoad.bind(this));
     this.xhr_.addEventListener('error', this.onError.bind(this));
@@ -44,7 +38,9 @@ export class $XHRConnection {
   onLoad (evt:Object) {
     this.deferred.resolve(this.xhr_.responseText);
   }
-
+  /**
+   * Called when something goes horribly wrong with the request
+   */
   onError (evt:Object) {
     this.deferred.reject(evt);
   }
@@ -57,14 +53,6 @@ export class $XHRConnection {
 
   send (data) {
     this.xhr_.send(data);
-  }
-
-  /**
-   * @returns {String} fully-qualified URL to request, including encoded query
-   * parameters.
-   */
-  fullUrl () {
-    return this.url + this.params.toQueryString(this.url.indexOf('?') > -1);
   }
 }
 

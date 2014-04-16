@@ -15,48 +15,8 @@ describe('$XHRConnection', function() {
   });
 
   describe('constructor', function() {
-    it('should set the provided $QueryParams to the instance', function() {
-      var connection = new $XHRConnection(
-          sampleParams,
-          sampleRequestData);
-      expect(connection.params).toBe(sampleParams);
-    });
-
-
-    it('should complain if invalid $QueryParams type provided', function() {
-      expect(function() {
-        new $XHRConnection({}, sampleRequestData);
-      }).toThrow();
-      expect(function() {
-        new $XHRConnection(sampleParams, sampleRequestData);
-      }).not.toThrow();
-    });
-
-
-    it('should set the provided $RequestData to the instance', function() {
-      var connection = new $XHRConnection(sampleParams, sampleRequestData);
-      expect(connection.data_).toBe(sampleRequestData);
-    });
-
-    it('should set the serialized data to the instance', function() {
-      var connection = new $XHRConnection(sampleParams, sampleRequestData);
-      expect(connection.data).toBe(sampleRequestData.serialize());
-    });
-
-
-    it('should complain if invalid $RequestData type provided', function() {
-      expect(function() {
-        new $XHRConnection(sampleParams, {});
-      }).toThrow();
-      expect(function() {
-        new $XHRConnection(sampleParams, sampleRequestData);
-      }).not.toThrow();
-    });
-
-
     it('should create a promise for the connection', function() {
       var connection = new $XHRConnection(sampleParams, sampleRequestData);
-
       expect(connection.promise instanceof Promise).toBe(true);
     });
 

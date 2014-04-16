@@ -1,4 +1,4 @@
-export class $QueryParams extends Map {
+export class $QueryParams {
   constructor (params) {
     this.params = params;
   }
@@ -27,7 +27,7 @@ export class $QueryParams extends Map {
    */
   toQueryString (isAppended) {
     var queryString, orderedKeys, key, encodedKey, value;
-    if (!this.params) return '';
+    if (!this.params || Object.keys(this.params).length === 0) return '';
 
     queryString = isAppended ? '&' : '?';
     orderedKeys = Object.keys(this.params).sort();

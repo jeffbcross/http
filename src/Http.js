@@ -1,14 +1,16 @@
-import {$XHRConnection} from './XHRConnection';
+import {$XHRConnection, $ConnectionFactory} from './XHRConnection';
 import {Inject} from 'di/annotations';
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
 
 export class $Http {
-  constructor () {
+  @Inject($ConnectionFactory)
+  constructor (Connection) {
+    this.ConnectionClass = Connection;
   }
 
   request(config) {
-    var connection = new $XHRConnection (
+    var connection = new this.ConnectionClass(
         config.method,
         config.url,
         new $QueryParams(config.params || {}),

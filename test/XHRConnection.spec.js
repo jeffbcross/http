@@ -152,66 +152,13 @@ describe('$XHRConnection', function() {
   });
 
 
-  xdescribe('.promise', function() {
-    beforeEach(function() {
-      this.zone = zone.fork({
-        onZoneEnter: function() {
-          PromiseBackend.patchWithMock();
-        },
-        onZoneLeave: function() {
-          PromiseBackend.verifyNoOutstandingTasks();
-          PromiseBackend.restoreNativePromise();
-        }
-      });
-    });
-
-    afterEach(function() {
-
-    });
-
-    it('should call the then functions in order on success', function () {
-      this.zone.run(function() {
-        var firstSpy = jasmine.createSpy('firstSpy').and.returnValue(1);
-        var secondSpy = jasmine.createSpy('secondSpy');
-        var connection = new $XHRConnection(
-            'GET',
-            '/items',
-            sampleParams,
-            sampleRequestData);
-        connection.
-          then(firstSpy).
-          then(secondSpy);
-
-        connection.onComplete('foo');
-
-        PromiseBackend.flush();
-
-        PromiseBackend.flush();
-        expect(firstSpy).toHaveBeenCalledWith('foo');
-        expect(secondSpy).toHaveBeenCalledWith(1);
-      });
-    });
-
-
-    it('should call then functions in order on error', function() {
-      var responses = [];
-      var connection = new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
-      connection.
-        then(null, function(val) {
-          responses.push(1);
-        }).
-        then(null, function(val) {
-          responses.push(2);
-        });
-      expect(responses).toEqual([]);
-
-      connection.onComplete(undefined, 'foo');
-      expect(responses).toEqual([1,2]);
+  describe('.promise', function() {
+    it('should return a promise', function() {
+      assert.type(new $XHRConnection(
+        'GET',
+        '/users',
+        new $QueryParams,
+        new $RequestData).promise, Promise);
     })
   });
-
 });

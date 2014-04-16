@@ -82,3 +82,9 @@ export class $XHRConnection {
     return this.url + this.params.toQueryString(this.url.indexOf('?') > -1);
   }
 }
+
+export class $ConnectionFactory {
+  constructor() {
+    return $XHRConnection;
+  }
+}

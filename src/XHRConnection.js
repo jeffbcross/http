@@ -27,6 +27,8 @@ export class $XHRConnection {
     this.xhr_ = new XMLHttpRequest();
 
     this.xhr_.onerror = this.onError;
+    this.xhr_.addEventListener('load', this.onLoad.bind(this));
+    this.xhr_.addEventListener('error', this.onError.bind(this));
     this.deferred = new Deferred();
     this.promise = this.deferred.promise;
   }
@@ -41,21 +43,15 @@ export class $XHRConnection {
   }
 
   /**
-   * Called when a request is completed, regardless of the status of the
-   * response.
-   * TODO: Apply some real logic here.
+   * Called when the request transfer is completed, regardless of the status of
+   * the response.
    */
-  onComplete (res) {
-    if (typeof res !== 'undefined') {
-      this.deferred.resolve(res);
-    }
-    else {
-      this.deferred.reject(res);
-    }
+  onLoad (evt:Object) {
+    this.deferred.resolve(this.xhr_.responseText);
   }
 
-  onError () {
-
+  onError (evt:Object) {
+    this.deferred.reject(evt);
   }
 
   error(callback) {
@@ -67,10 +63,10 @@ export class $XHRConnection {
     assert(url, assert.string);
     this.method = method;
     this.url = url;
+    this.xhr_.open(this.method, this.url);
   }
 
   send (data) {
-    this.xhr_.open(this.method, this.url);
     this.xhr_.send(data);
   }
 

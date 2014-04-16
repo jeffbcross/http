@@ -19,12 +19,20 @@ describe('Http', function () {
 
 
   describe('.request()', function() {
-    it('should create a new Connection', inject($Http, function($http) {
-      expect($http.request({
-        method: 'GET',
-        url: '/users'
-      })).toBeInstanceOf($XHRConnection);
-    }));
+    beforeEach(function() {
+      this.openSpy = spyOn($XHRConnection.prototype, 'open');
+      this.sendSpy = spyOn($XHRConnection.prototype, 'send');
+    });
+
+
+    it('should create a new Connection', function(){
+      inject($Http, function($http) {
+        expect($http.request({
+          method: 'GET',
+          url: '/users'
+        })).toBeInstanceOf($XHRConnection);
+      });
+    });
 
 
     it('should use ConnectionClass to instantiate a Connection', function() {
@@ -40,35 +48,57 @@ describe('Http', function () {
     });
 
 
-    it('should call open on the connection', inject($Http, function($http) {
-      var openSpy = spyOn($XHRConnection.prototype, 'open');
+    it('should call open on the connection', function() {
+      var self = this;
+      inject($Http, function($http) {
+        $http.request({
+          method: 'GET',
+          url: '/users'
+        });
+        expect(self.openSpy).toHaveBeenCalledWith('GET', '/users');
+      });
+    });
+
+
+    it('should call send on the connection', function() {
+      var self = this;
+      inject($Http, function($http) {
+        $http.request({
+          method: 'GET',
+          url: '/users'
+        });
+        expect(self.sendSpy).toHaveBeenCalled();
+      });
+    });
+
+
+    it('should pass data to send', function() {
+      var self = this;
+      inject($Http, function($http) {
+        var data = '{"user" : "jeffbcross"}';
+        $http.request({
+          method: 'GET',
+          url: '/users',
+          data: data
+        });
+        expect(self.sendSpy).toHaveBeenCalledWith(data);
+      });
+    });
+  });
+
+  //TODO (jeffbcross): this is a badly-placed test, does not belong in unit
+  //It's also bad because it relies on loading a Karma script
+  //This test is merely a guide to make sure I don't lose my way
+  it('should actually execute the request', function(done) {
+    inject($Http, function($http) {
       $http.request({
         method: 'GET',
-        url: '/users'
+        url: 'http://localhost:9877/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js'
+      }).
+      then(function(res) {
+        expect(res).toContain('monkey patch');
+        done();
       });
-      expect(openSpy).toHaveBeenCalledWith('GET', '/users');
-    }));
-
-
-    it('should call send on the connection', inject($Http, function($http) {
-      var sendSpy = spyOn($XHRConnection.prototype, 'send');
-      $http.request({
-        method: 'GET',
-        url: '/users'
-      });
-      expect(sendSpy).toHaveBeenCalled();
-    }));
-
-
-    it('should pass data to send', inject($Http, function($http) {
-      var sendSpy = spyOn($XHRConnection.prototype, 'send');
-      var data = '{"user" : "jeffbcross"}';
-      $http.request({
-        method: 'GET',
-        url: '/users',
-        data: data
-      });
-      expect(sendSpy).toHaveBeenCalledWith(data);
-    }));
+    });
   });
 });

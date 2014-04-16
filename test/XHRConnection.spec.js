@@ -11,7 +11,7 @@ describe('$XHRConnection', function() {
   var sampleRequestData = new $RequestData({user: 'Tobias'});
 
   it('should implement IConnection', function() {
-    assert.type($XHRConnection, IConnection)
+    assert.type($XHRConnection, IConnection);
   });
 
   describe('constructor', function() {
@@ -112,6 +112,30 @@ describe('$XHRConnection', function() {
           sampleRequestData);
 
       expect(connection.promise instanceof Promise).toBe(true);
+    });
+
+
+    it('should add a load event listener', function() {
+      var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
+      new $XHRConnection(
+          'GET',
+          '/items',
+          sampleParams,
+          sampleRequestData);
+      expect(listenerSpy.calls.all()[0].args[0]).toBe('load');
+    });
+
+
+    it('should add an error event listener', function() {
+      var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
+      new $XHRConnection(
+          'GET',
+          '/items',
+          sampleParams,
+          sampleRequestData);
+
+      expect(listenerSpy.calls.all()[1].args[0]).toBe('error');
+      assert.type(listenerSpy.calls.all()[1].args[1], Function);
     });
   });
 

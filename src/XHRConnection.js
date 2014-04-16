@@ -8,7 +8,7 @@ import {assert} from 'assert';
 /**
  * Manages state of a single connection
  */
-export class $XHRConnection {
+export class $Connection {
   constructor() {
     this.xhr_ = new XMLHttpRequest();
     this.xhr_.addEventListener('load', this.onLoad.bind(this));
@@ -58,6 +58,6 @@ export class $XHRConnection {
 
 export class $ConnectionFactory {
   constructor() {
-    return $XHRConnection;
+    return $Connection;
   }
 }

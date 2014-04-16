@@ -1,12 +1,14 @@
 import {$QueryParams} from './QueryParams';
 import {$RequestData} from './RequestData';
-import {$XHRConnection, $ConnectionFactory} from './XHRConnection';
+import {$ConnectionFactory} from './XHRConnection';
 import {assert} from 'assert';
+import {IConnection} from './IConnection';
 import {Inject} from 'di/annotations';
 
+@Inject($ConnectionFactory)
 export class $Http {
-  @Inject($ConnectionFactory)
   constructor (Connection) {
+    assert.type(Connection, IConnection);
     this.ConnectionClass = Connection;
   }
 

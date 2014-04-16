@@ -1,5 +1,5 @@
 import {$Http} from '../src/Http';
-import {$XHRConnection} from '../src/XHRConnection';
+import {$Connection} from '../src/XHRConnection';
 import {$RequestData} from '../src/RequestData';
 import {$QueryParams} from '../src/QueryParams';
 import {assert} from 'assert';
@@ -21,8 +21,8 @@ describe('Http', function () {
 
   describe('.request()', function() {
     beforeEach(function() {
-      this.openSpy = spyOn($XHRConnection.prototype, 'open');
-      this.sendSpy = spyOn($XHRConnection.prototype, 'send');
+      this.openSpy = spyOn($Connection.prototype, 'open');
+      this.sendSpy = spyOn($Connection.prototype, 'send');
     });
 
 
@@ -75,7 +75,7 @@ describe('Http', function () {
 
     it('should create a new Connection', function(){
       inject($Http, function($http) {
-        expect($http.request('GET', '/users')).toBeInstanceOf($XHRConnection);
+        expect($http.request('GET', '/users')).toBeInstanceOf($Connection);
       });
     });
 

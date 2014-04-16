@@ -15,50 +15,8 @@ describe('$XHRConnection', function() {
   });
 
   describe('constructor', function() {
-    it('should set the method to the instance', function() {
-      var connection = new $XHRConnection(
-          'GET',
-          '',
-          sampleParams,
-          sampleRequestData);
-      expect(connection.method).toBe('GET');
-    });
-
-
-    it('should complain if provided method is not a string', function() {
-      expect(function() {
-        new $XHRConnection({}, '/items', sampleParams, sampleRequestData);
-      }).toThrow();
-      expect(function() {
-        new $XHRConnection('GET', '/items', sampleParams, sampleRequestData);
-      }).not.toThrow();
-    });
-
-
-    it('should set the url to the instance', function () {
-      var connection = new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
-      expect(connection.url).toBe('/items');
-    });
-
-
-    it('should complain if invalid url type provided', function() {
-      expect(function() {
-        new $XHRConnection('GET', {}, sampleParams, sampleRequestData);
-      }).toThrow();
-      expect(function() {
-        new $XHRConnection('GET', '/items', sampleParams, sampleRequestData);
-      }).not.toThrow();
-    });
-
-
     it('should set the provided $QueryParams to the instance', function() {
       var connection = new $XHRConnection(
-          'GET',
-          '/items',
           sampleParams,
           sampleRequestData);
       expect(connection.params).toBe(sampleParams);
@@ -67,49 +25,37 @@ describe('$XHRConnection', function() {
 
     it('should complain if invalid $QueryParams type provided', function() {
       expect(function() {
-        new $XHRConnection('GET', '/items', {}, sampleRequestData);
+        new $XHRConnection({}, sampleRequestData);
       }).toThrow();
       expect(function() {
-        new $XHRConnection('GET', '/items', sampleParams, sampleRequestData);
+        new $XHRConnection(sampleParams, sampleRequestData);
       }).not.toThrow();
     });
 
 
     it('should set the provided $RequestData to the instance', function() {
-      var connection = new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
+      var connection = new $XHRConnection(sampleParams, sampleRequestData);
       expect(connection.data_).toBe(sampleRequestData);
     });
 
     it('should set the serialized data to the instance', function() {
-      var connection = new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
+      var connection = new $XHRConnection(sampleParams, sampleRequestData);
       expect(connection.data).toBe(sampleRequestData.serialize());
     });
 
 
     it('should complain if invalid $RequestData type provided', function() {
       expect(function() {
-        new $XHRConnection('GET', '/items', sampleParams, {});
+        new $XHRConnection(sampleParams, {});
       }).toThrow();
       expect(function() {
-        new $XHRConnection('GET', '/items', sampleParams, sampleRequestData);
+        new $XHRConnection(sampleParams, sampleRequestData);
       }).not.toThrow();
     });
 
 
     it('should create a promise for the connection', function() {
-      var connection = new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
+      var connection = new $XHRConnection(sampleParams, sampleRequestData);
 
       expect(connection.promise instanceof Promise).toBe(true);
     });
@@ -117,22 +63,14 @@ describe('$XHRConnection', function() {
 
     it('should add a load event listener', function() {
       var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
-      new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
+      new $XHRConnection(sampleParams, sampleRequestData);
       expect(listenerSpy.calls.all()[0].args[0]).toBe('load');
     });
 
 
     it('should add an error event listener', function() {
       var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
-      new $XHRConnection(
-          'GET',
-          '/items',
-          sampleParams,
-          sampleRequestData);
+      new $XHRConnection(sampleParams, sampleRequestData);
 
       expect(listenerSpy.calls.all()[1].args[0]).toBe('error');
       assert.type(listenerSpy.calls.all()[1].args[1], Function);
@@ -143,13 +81,50 @@ describe('$XHRConnection', function() {
   describe('.open()', function() {
     it('should complain if no method provided', function() {
       var connection = new $XHRConnection(
-        '',
-        '',
         new $QueryParams(),
         new $RequestData());
       expect(function() {
         connection.open(undefined, '/users');
       }).toThrow();
+    });
+
+    it('should complain if provided method is not a string', function() {
+      expect(function() {
+        var connection = new $XHRConnection(sampleParams, sampleRequestData);
+        connection.open(undefined, '/users');
+      }).toThrow();
+      expect(function() {
+        var connection = new $XHRConnection(sampleParams, sampleRequestData);
+        connection.open('GET', '/users');
+      }).not.toThrow();
+    });
+
+
+    it('should set the method to the instance', function() {
+      var connection = new $XHRConnection(
+          sampleParams,
+          sampleRequestData);
+      connection.open('GET', '/users');
+      expect(connection.method).toBe('GET');
+    });
+
+
+    it('should complain if invalid url type provided', function() {
+      expect(function() {
+        var connection = new $XHRConnection(sampleParams, sampleRequestData);
+        connection.open('GET', undefined);
+      }).toThrow();
+      expect(function() {
+        var connection = new $XHRConnection(sampleParams, sampleRequestData);
+        connection.open('GET', '/users');
+      }).not.toThrow();
+    });
+
+
+    it('should set the url to the instance', function () {
+      var connection = new $XHRConnection(sampleParams, sampleRequestData);
+      connection.open('GET', '/items');
+      expect(connection.url).toBe('/items');
     });
 
 
@@ -167,8 +142,6 @@ describe('$XHRConnection', function() {
   describe('instance', function() {
     it('should be thenable at the instance level', function(){
       var connection = new $XHRConnection(
-          '',
-          '',
           new $QueryParams(),
           new $RequestData());
       expect(typeof connection.then).toBe('function');
@@ -179,10 +152,18 @@ describe('$XHRConnection', function() {
   describe('.promise', function() {
     it('should return a promise', function() {
       assert.type(new $XHRConnection(
-        'GET',
-        '/users',
         new $QueryParams,
         new $RequestData).promise, Promise);
     })
+  });
+
+
+  describe('.success()', function() {
+
+  });
+
+
+  describe('.error()', function() {
+
   });
 });

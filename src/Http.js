@@ -11,14 +11,12 @@ export class $Http {
 
   request(config) {
     var connection = new this.ConnectionClass(
-        config.method,
-        config.url,
         new $QueryParams(config.params || {}),
         new $RequestData(config.data)
     );
 
-    connection.open(connection.method, connection.url);
-    connection.send(connection.data);
+    connection.open(config.method, config.url);
+    connection.send(config.data);
 
     return connection;
   }

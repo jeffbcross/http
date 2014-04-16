@@ -89,7 +89,7 @@ describe('Http', function () {
   //TODO (jeffbcross): this is a badly-placed test, does not belong in unit
   //It's also bad because it relies on loading a Karma script
   //This test is merely a guide to make sure I don't lose my way
-  it('should actually execute the request', function(done) {
+  xit('should actually execute the request', function(done) {
     inject($Http, function($http) {
       $http.request({
         method: 'GET',

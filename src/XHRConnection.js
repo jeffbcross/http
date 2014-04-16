@@ -7,28 +7,19 @@ import {assert} from 'assert';
 
 /**
  * Manages state and properties of a single connection
- * @param {String} method Method used to communicate with host
- * @param {String} url Location with which to establish a connection
  * @param {$QueryParams} params
  * @param {$RequestData} data
  */
 export class $XHRConnection {
-  constructor(
-      method: string,
-      url: string,
-      params: $QueryParams,
-      data: $RequestData) {
-    this.method = method;
-    this.url = url;
+  constructor(params:$QueryParams, data:$RequestData) {
     this.params = params;
     this.data_ = data;
     this.data = data.serialize();
 
     this.xhr_ = new XMLHttpRequest();
-
-    this.xhr_.onerror = this.onError;
     this.xhr_.addEventListener('load', this.onLoad.bind(this));
     this.xhr_.addEventListener('error', this.onError.bind(this));
+
     this.deferred = new Deferred();
     this.promise = this.deferred.promise;
   }
@@ -40,6 +31,10 @@ export class $XHRConnection {
 
   success (callback) {
     this.promise.then(callback);
+  }
+
+  error(callback) {
+    this.promise.then(null, callback);
   }
 
   /**
@@ -54,13 +49,7 @@ export class $XHRConnection {
     this.deferred.reject(evt);
   }
 
-  error(callback) {
-    this.promise.then(null, callback);
-  }
-
-  open (method, url) {
-    assert.type(method, assert.string);
-    assert(url, assert.string);
+  open (method:string, url:string) {
     this.method = method;
     this.url = url;
     this.xhr_.open(this.method, this.url);

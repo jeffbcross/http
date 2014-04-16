@@ -1,12 +1,18 @@
 import {$RequestData} from '../src/RequestData';
 import {$QueryParams} from '../src/QueryParams';
 import {$XHRConnection} from '../src/XHRConnection';
+import {assert} from 'assert';
+import {IConnection} from '../src/IConnection';
 import {inject, use} from 'di/testing';
 import {PromiseBackend, PromiseMock} from 'deferred/PromiseMock';
 
 describe('$XHRConnection', function() {
   var sampleParams = new $QueryParams({id: 1});
   var sampleRequestData = new $RequestData({user: 'Tobias'});
+
+  it('should implement IConnection', function() {
+    assert.type($XHRConnection, IConnection)
+  });
 
   describe('constructor', function() {
     it('should set the method to the instance', function() {

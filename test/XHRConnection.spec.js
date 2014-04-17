@@ -170,7 +170,7 @@ describe('$Connection', function() {
   });
 
 
-  xdescribe('.promise', function() {
+  describe('.promise', function() {
     it('should return a promise', function() {
       assert.type(new $Connection().promise, Promise);
     })
@@ -208,6 +208,7 @@ describe('$Connection', function() {
     it('should unregister load and error events', function() {
       var addListenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
       var removedListenerSpy = spyOn(XMLHttpRequest.prototype, 'removeEventListener');
+      var sendSpy = spyOn(XMLHttpRequest.prototype, 'send');
       var connection = new $Connection();
       connection.open('GET', '/items');
       connection.send();

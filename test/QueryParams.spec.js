@@ -1,4 +1,4 @@
-import {$QueryParams} from '../src/QueryParams';
+import {$QueryParams, encodeValue} from '../src/QueryParams';
 
 describe('$QueryParams', function() {
   describe('constructor', function() {
@@ -60,27 +60,26 @@ describe('$QueryParams', function() {
 
     });
   });
+});
+
+describe('encodeValue()', function() {
+  it('should urlEncode value', function() {
+    expect(encodeValue('http://%.com')).
+        toBe('http:%2F%2F%25.com');
+  });
 
 
-  describe('._encodeValue()', function() {
-    it('should urlEncode value', function() {
-      expect($QueryParams._encodeValue('http://%.com')).
-          toBe('http:%2F%2F%25.com');
-    });
+  it('should create a key/value pair for each item in the array \
+    (excluding the key from the first item)', function() {
+      expect(encodeValue(['jeff','igor','tobias'], 'person')).
+          toBe('jeff&person=igor&person=tobias');
+  });
 
 
-    it('should create a key/value pair for each item in the array \
-      (excluding the key from the first item)', function() {
-        expect($QueryParams._encodeValue(['jeff','igor','tobias'], 'person')).
-            toBe('jeff&person=igor&person=tobias');
-    });
-
-
-    it('should complain if given an array without an encodedKey', function() {
-      expect(function () {
-        $QueryParams._encodeValue(['jeff', 'igor', 'tobias']);
-      }).
-      toThrow();
-    });
+  it('should complain if given an array without an encodedKey', function() {
+    expect(function () {
+      encodeValue(['jeff', 'igor', 'tobias']);
+    }).
+    toThrow();
   });
 });

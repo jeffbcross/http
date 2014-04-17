@@ -5,7 +5,7 @@ import {Injector} from 'di/injector';
 import {Deferred} from 'deferred/Deferred';
 import {assert} from 'assert';
 
-var XHRDataTypes = assert.define('XHRDataTypes', function(value) {
+var XHRDataTypes = assert.define('XHRDataTypes', (value) => {
   if (value instanceof Document) {
     //pass
     //related to issue https://github.com/angular/assert/issues/5
@@ -21,9 +21,6 @@ var XHRDataTypes = assert.define('XHRDataTypes', function(value) {
 export class $Connection {
   constructor() {
     this.xhr_ = new XMLHttpRequest();
-    this.xhr_.addEventListener('load', this.onLoad.bind(this));
-    this.xhr_.addEventListener('error', this.onError.bind(this));
-
     this.deferred = new Deferred();
     this.promise = this.deferred.promise;
   }
@@ -45,13 +42,19 @@ export class $Connection {
    * Called when the request transfer is completed, regardless of the status of
    * the response.
    */
-  onLoad (evt:Object) {
+  //TODO (jeffbcross): analyze status and handle problems
+  onLoad_ (evt:Object) {
+    this.xhr_.removeEventListener('load', this.onLoad_);
+    this.xhr_.removeEventListener('error', this.onError_);
     this.deferred.resolve(this.xhr_.responseText);
   }
+
   /**
    * Called when something goes horribly wrong with the request
    */
-  onError (evt:Object) {
+  onError_ (evt:Object) {
+    this.xhr_.removeEventListener('load', this.onLoad_);
+    this.xhr_.removeEventListener('error', this.onError_);
     this.deferred.reject(evt);
   }
 
@@ -65,6 +68,8 @@ export class $Connection {
   }
 
   send (data) {
+    this.xhr_.addEventListener('load', this.onLoad_.bind(this));
+    this.xhr_.addEventListener('error', this.onError_.bind(this));
     if (typeof data !== 'undefined') {
       assert.type(data, XHRDataTypes);
     }

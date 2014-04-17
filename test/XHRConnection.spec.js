@@ -1,15 +1,10 @@
-import {$RequestData} from '../src/RequestData';
-import {$QueryParams} from '../src/QueryParams';
 import {$Connection} from '../src/XHRConnection';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
-import {inject, use} from 'di/testing';
+import {inject} from 'di/testing';
 import {PromiseBackend, PromiseMock} from 'deferred/PromiseMock';
 
 describe('$Connection', function() {
-  var sampleParams = new $QueryParams({id: 1});
-  var sampleRequestData = new $RequestData({user: 'Tobias'});
-
   it('should implement IConnection', function() {
     assert.type($Connection, IConnection);
   });
@@ -19,30 +14,12 @@ describe('$Connection', function() {
       var connection = new $Connection();
       expect(connection.promise instanceof Promise).toBe(true);
     });
-
-
-    it('should add a load event listener', function() {
-      var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
-      new $Connection();
-      expect(listenerSpy.calls.all()[0].args[0]).toBe('load');
-    });
-
-
-    it('should add an error event listener', function() {
-      var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
-      new $Connection();
-
-      expect(listenerSpy.calls.all()[1].args[0]).toBe('error');
-      assert.type(listenerSpy.calls.all()[1].args[1], Function);
-    });
   });
 
 
   describe('.open()', function() {
     it('should complain if no method provided', function() {
-      var connection = new $Connection(
-        new $QueryParams(),
-        new $RequestData());
+      var connection = new $Connection();
       expect(function() {
         connection.open(undefined, '/users');
       }).toThrow();
@@ -61,9 +38,7 @@ describe('$Connection', function() {
 
 
     it('should set the method to the instance', function() {
-      var connection = new $Connection(
-          sampleParams,
-          sampleRequestData);
+      var connection = new $Connection();
       connection.open('GET', '/users');
       expect(connection.method).toBe('GET');
     });
@@ -99,6 +74,22 @@ describe('$Connection', function() {
 
 
   describe('.send()', function() {
+    it('should add load and error event listeners', function() {
+      var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
+      var connection = new $Connection();
+      connection.open('GET', '/items');
+      expect(listenerSpy).not.toHaveBeenCalled();
+      connection.send();
+      expect(listenerSpy.calls.all()[1].args[0]).toBe('error');
+      expect(listenerSpy.calls.all()[0].args[0]).toBe('load');
+    });
+
+
+    it('should complain if the connection has not been opened', function() {
+
+    });
+
+
     it('should accept no data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
       var connection = new $Connection();
@@ -173,20 +164,60 @@ describe('$Connection', function() {
 
   describe('instance', function() {
     it('should be thenable at the instance level', function(){
-      var connection = new $Connection(
-          new $QueryParams(),
-          new $RequestData());
+      var connection = new $Connection();
       expect(typeof connection.then).toBe('function');
     });
   });
 
 
-  describe('.promise', function() {
+  xdescribe('.promise', function() {
     it('should return a promise', function() {
-      assert.type(new $Connection(
-        new $QueryParams,
-        new $RequestData).promise, Promise);
+      assert.type(new $Connection().promise, Promise);
     })
+  });
+
+
+  describe('.onLoad_()', function() {
+    it('should unregister load and error events', function() {
+      var addListenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
+      var removedListenerSpy = spyOn(XMLHttpRequest.prototype, 'removeEventListener');
+      var connection = new $Connection();
+      connection.open('GET', '/items');
+      connection.send();
+      expect(addListenerSpy.calls.count()).toBe(2);
+      expect(removedListenerSpy).not.toHaveBeenCalled();
+      connection.onLoad_({});
+      expect(removedListenerSpy.calls.count()).toBe(2);
+      expect(removedListenerSpy.calls.all()[0].args[0]).toBe('load');
+      expect(removedListenerSpy.calls.all()[1].args[0]).toBe('error');
+    });
+
+
+    it('should resolve the deferred with the responseText', function() {
+      var res = 'The time is 12:00pm';
+      var connection = new $Connection();
+      var resolveSpy = spyOn(connection.deferred, 'resolve');
+      connection.xhr_ = {responseText: res, removeEventListener: function(){}};
+      connection.onLoad_.call(connection, {});
+      expect(resolveSpy).toHaveBeenCalledWith(res);
+    });
+  });
+
+
+  describe('.onError_()', function() {
+    it('should unregister load and error events', function() {
+      var addListenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
+      var removedListenerSpy = spyOn(XMLHttpRequest.prototype, 'removeEventListener');
+      var connection = new $Connection();
+      connection.open('GET', '/items');
+      connection.send();
+      expect(addListenerSpy.calls.count()).toBe(2);
+      expect(removedListenerSpy).not.toHaveBeenCalled();
+      connection.onError_({});
+      expect(removedListenerSpy.calls.count()).toBe(2);
+      expect(removedListenerSpy.calls.all()[0].args[0]).toBe('load');
+      expect(removedListenerSpy.calls.all()[1].args[0]).toBe('error');
+    });
   });
 
 

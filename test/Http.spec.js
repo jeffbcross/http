@@ -1,4 +1,4 @@
-import {$Http} from '../src/Http';
+import {$Http, fullUrl} from '../src/Http';
 import {$Connection} from '../src/XHRConnection';
 import {$RequestData} from '../src/RequestData';
 import {$QueryParams} from '../src/QueryParams';
@@ -9,7 +9,7 @@ import {inject, use} from 'di/testing';
 import {MockConnection, MockConnectionFactory} from './mocks/MockConnection';
 
 
-describe('Http', function () {
+describe('$Http', function () {
   describe('constructor', function() {
     it('should add the Connection class to the service', inject(
         $Http,
@@ -46,20 +46,6 @@ describe('Http', function () {
         expect(function() {
           $http.request('GET', '/users')
         }).not.toThrow();
-      });
-    });
-
-
-    it('should call fullUrl before calling open', function() {
-      var url, params;
-      inject($Http, function($http) {
-        spyOn($http, 'fullUrl').and.callFake(function(u, p) {
-          url = u;
-          params = p;
-        });
-        $http.request('GET', '/users', {params: {name: 'Jeff'}});
-        expect(url).toBe('/users');
-        expect(params.toQueryString()).toBe('?name=Jeff');
       });
     });
 
@@ -119,38 +105,32 @@ describe('Http', function () {
   });
 
 
-  describe('.fullUrl', function() {
-    it('should serialize query parameters and add to url', function() {
-      inject($Http, function($http) {
-        var params = new $QueryParams({name: 'Jeff'});
-        expect($http.fullUrl('/users', params)).toBe('/users?name=Jeff');
-      });
-    });
-
-
-    it('should append query parameters if parameters already exist', function() {
-      var self = this;
-      inject($Http, function($http) {
-        var params = new $QueryParams({name: 'Jeff'});
-        expect($http.fullUrl('/users?hair=brown', params)).toBe('/users?hair=brown&name=Jeff');
-      });
-    });
-  });
-
-
   //TODO (jeffbcross): this is a badly-placed test, does not belong in unit
   //It's also bad because it relies on loading a Karma script
   //This test is merely a guide to make sure I don't lose my way
   xit('should actually execute the request', function(done) {
     inject($Http, function($http) {
-      $http.request({
-        method: 'GET',
-        url: 'http://localhost:9877/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js'
-      }).
+      $http.request('GET', '/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js').
       then(function(res) {
         expect(res).toContain('monkey patch');
         done();
+      }, function(reason){
+        throw new Error(reason);
       });
     });
+  });
+});
+
+
+describe('fullUrl()', function() {
+  it('should serialize query parameters and add to url', function() {
+    var params = new $QueryParams({name: 'Jeff'});
+    expect(fullUrl('/users', params)).toBe('/users?name=Jeff');
+  });
+
+
+  it('should append query parameters if parameters already exist', function() {
+    var params = new $QueryParams({name: 'Jeff'});
+    expect(fullUrl('/users?hair=brown', params)).toBe('/users?hair=brown&name=Jeff');
   });
 });

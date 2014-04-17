@@ -6,30 +6,31 @@ import {IConnection} from './IConnection';
 import {Inject} from 'di/annotations';
 
 @Inject($ConnectionFactory)
-export class $Http {
+class $Http {
   constructor (Connection) {
     assert.type(Connection, IConnection);
     this.ConnectionClass = Connection;
   }
 
   request(method, url, options) {
-    var queryParams, requestData, connection, fullUrl;
+    var queryParams, requestData, connection;
     assert.type(method, assert.string);
     assert.type(url, assert.string);
 
     queryParams = new $QueryParams(options && options.params || {});
     requestData = new $RequestData(options && options.data);
     connection = new this.ConnectionClass();
+    url = fullUrl(url, queryParams);
 
-    fullUrl = this.fullUrl(url, queryParams);
-
-    connection.open(method, fullUrl);
+    connection.open(method, url);
     connection.send(requestData.serialize());
 
     return connection;
   }
-
-  fullUrl(url, params) {
-    return url + params.toQueryString(url.indexOf('?') > -1);
-  }
 }
+
+function fullUrl(url, params) {
+  return url + params.toQueryString(url.indexOf('?') > -1);
+}
+
+export {fullUrl, $Http};

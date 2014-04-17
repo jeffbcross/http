@@ -5,6 +5,16 @@ import {Injector} from 'di/injector';
 import {Deferred} from 'deferred/Deferred';
 import {assert} from 'assert';
 
+var XHRDataTypes = assert.define('XHRDataTypes', function(value) {
+  if (value instanceof Document) {
+    //pass
+    //related to issue https://github.com/angular/assert/issues/5
+  }
+  else {
+    assert(value).is(DataView, Blob, Document, assert.string, FormData);
+  }
+});
+
 /**
  * Manages state of a single connection
  */
@@ -46,12 +56,19 @@ export class $Connection {
   }
 
   open (method:string, url:string) {
+    if (this.xhr_.readyState === 1) {
+      throw new Error('Connection is already open');
+    }
     this.method = method;
     this.url = url;
     this.xhr_.open(this.method, this.url);
   }
 
   send (data) {
+    if (typeof data !== 'undefined') {
+      assert.type(data, XHRDataTypes);
+    }
+
     this.xhr_.send(data);
   }
 }

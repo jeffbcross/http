@@ -1,3 +1,5 @@
+import {assert} from 'assert';
+
 class $QueryParams {
   constructor (params) {
     this.params = params;
@@ -20,31 +22,34 @@ class $QueryParams {
   unset (key:string, value) {
 
   }
+}
 
-  /**
-   * Serialize the parameters into a queryString, including the leading "?" or
-   * "&". If isAppended is truthy, the queryString should begin with "&".
-   */
-  toQueryString (isAppended) {
-    var queryString, orderedKeys, key, encodedKey, value;
-    if (!this.params || Object.keys(this.params).length === 0) return '';
-
-    queryString = isAppended ? '&' : '?';
-    orderedKeys = Object.keys(this.params).sort();
-
-    while (key = orderedKeys.shift()) {
-      encodedKey = encodeValue(key);
-      queryString += encodedKey;
-      queryString += '=';
-      value = this.params[key];
-
-
-      queryString += encodeValue(value, encodedKey);
-      queryString += orderedKeys.length ? '&' : '';
-    }
-
-    return queryString;
+/**
+ * Serialize the parameters into a queryString, including the leading "?" or
+ * "&". If isAppended is truthy, the queryString should begin with "&".
+ */
+function toQueryString (qp: $QueryParams, isAppended) {
+  var queryString, orderedKeys, key, encodedKey, value;
+  if (typeof isAppended !== 'undefined') {
+    assert.type(isAppended, assert.boolean);
   }
+  if (Object.keys(qp.params).length === 0) return '';
+
+  queryString = isAppended ? '&' : '?';
+  orderedKeys = Object.keys(qp.params).sort();
+
+  while (key = orderedKeys.shift()) {
+    encodedKey = encodeValue(key);
+    queryString += encodedKey;
+    queryString += '=';
+    value = qp.params[key];
+
+
+    queryString += encodeValue(value, encodedKey);
+    queryString += orderedKeys.length ? '&' : '';
+  }
+
+  return queryString;
 }
 
 function encodeValue (value, encodedKey) {
@@ -79,4 +84,4 @@ function encodeValue (value, encodedKey) {
           replace('%40', '@');
 }
 
-export {$QueryParams, encodeValue}
+export {$QueryParams, encodeValue, toQueryString}

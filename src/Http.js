@@ -1,4 +1,4 @@
-import {$QueryParams} from './QueryParams';
+import {$QueryParams, toQueryString} from './QueryParams';
 import {$RequestData} from './RequestData';
 import {$ConnectionFactory} from './XHRConnection';
 import {assert} from 'assert';
@@ -29,8 +29,8 @@ class $Http {
   }
 }
 
-function fullUrl(url, params) {
-  return url + params.toQueryString(url.indexOf('?') > -1);
+function fullUrl(url:string, params:$QueryParams) {
+  return url + toQueryString(params, url.indexOf('?') > -1);
 }
 
 export {fullUrl, $Http};

@@ -77,12 +77,26 @@ describe('ConnectionMockBackend', function() {
         expect(resolveSpy).not.toHaveBeenCalled();
       });
     });
+
+
+    it('should call reject if the status is > 399', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var requestResponseMap = new Map();
+        ConnectionMockBackend.whenRequest('GET', '/users').respond(400, 'Not Found');
+        var connection = new ConnectionMock();
+        var rejectSpy = spyOn(connection.deferred, 'reject').and.callThrough();
+        connection.open('GET', '/users');
+        connection.send();
+        ConnectionMockBackend.flush();
+        expect(rejectSpy).toHaveBeenCalledWith('Not Found');
+      });
+    });
   });
 
 
   describe('.addConnection', function() {
 
-  })
+  });
 
 
   describe('.verifyNotOustandingResponses', function() {

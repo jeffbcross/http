@@ -17,6 +17,12 @@ export class ResponseMap extends Map {
   }
 }
 
+/**
+ * TODO (@jeffbcross): support expectGET, in a way that also allows post-request
+ * inspection of history of requests made.
+ * TODO (@jeffbcross): add methods to verify no outstanding connections or
+ * responses.
+ */
 export class ConnectionMockBackend {
   static flush() {
     var responses, connections;
@@ -36,9 +42,16 @@ export class ConnectionMockBackend {
       }
       if (responses.has(connection.method) &&
           responses.get(connection.method).has(connection.url)) {
-        connection.deferred.resolve(responses.get(connection.method).
-            get(connection.url).
-            get('body'));
+
+        var responseMap = responses.
+            get(connection.method).
+            get(connection.url);
+        if (responseMap.get('code') > 399) {
+          connection.deferred.reject(responseMap.get('body'));
+        }
+        else {
+          connection.deferred.resolve(responseMap.get('body'));
+        }
       }
     });
 

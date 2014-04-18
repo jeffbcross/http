@@ -5,6 +5,8 @@ import {assert} from 'assert';
 import {IConnection} from './IConnection';
 import {Inject} from 'di/annotations';
 
+//TODO (@jeffbcross): support hot-swapping of ConnectionClass after
+//instantiation
 @Inject($ConnectionFactory)
 class $Http {
   constructor (Connection) {
@@ -12,6 +14,7 @@ class $Http {
     this.ConnectionClass = Connection;
   }
 
+  //TODO (@jeffbcross): support responseType in options
   request(method, url, options) {
     var queryParams, requestData, connection;
     assert.type(method, assert.string);

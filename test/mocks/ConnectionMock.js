@@ -42,7 +42,7 @@ export class ConnectionMockBackend {
       }
     });
 
-    new PromiseBackend().flush(true);
+    PromiseBackend.flush(true);
   }
 
   static whenRequest(method:string, url:string) {
@@ -66,7 +66,7 @@ export class ConnectionMockBackend {
   }
 
   static forkZone() {
-    return new PromiseBackend().forkZone();
+    return PromiseBackend.forkZone();
   }
 }
 

@@ -71,7 +71,7 @@ export class ConnectionMockBackend {
     return responseMap;
   }
 
-  static addConnection(connection) {
+  static addConnection(connection:IConnection) {
     if (!ConnectionMockBackend.connections) {
       ConnectionMockBackend.connections = [];
     }

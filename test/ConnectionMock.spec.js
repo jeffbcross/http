@@ -95,11 +95,39 @@ describe('ConnectionMockBackend', function() {
 
 
   describe('.addConnection', function() {
+    afterEach(function () {ConnectionMockBackend.connections = []})
+    it('should verify that the connection implements IConnection', function() {
+      expect(ConnectionMockBackend.addConnection).toThrow();
+      expect(function() {
+        ConnectionMockBackend.addConnection({})
+      }).toThrow();
+      ConnectionMockBackend.addConnection(new ConnectionMock());
+    });
 
+
+    it('should add the connection to an ordered list', function() {
+      var connection1 = new ConnectionMock();
+      var connection2 = new ConnectionMock();
+      ConnectionMockBackend.connections = [];
+      ConnectionMockBackend.addConnection(connection1);
+      ConnectionMockBackend.addConnection(connection2);
+      expect(ConnectionMockBackend.connections[0]).toBe(connection1);
+      expect(ConnectionMockBackend.connections[1]).toBe(connection2);
+      expect(ConnectionMockBackend.connections.length).toBe(2);
+    });
+
+
+    it('should create the collections list if not exist', function() {
+      var connection = new ConnectionMock;
+      delete ConnectionMockBackend.connections;
+      expect(ConnectionMockBackend.connections).toBeUndefined();
+      ConnectionMockBackend.addConnection(connection);
+      expect(ConnectionMockBackend.connections.length).toBe(1);
+    });
   });
 
 
-  describe('.verifyNotOustandingResponses', function() {
+  describe('.verifyNoOustandingResponses', function() {
 
   });
 

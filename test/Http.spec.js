@@ -6,7 +6,7 @@ import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';
 import {inject, use} from 'di/testing';
-import {MockConnection, MockConnectionFactory} from './mocks/MockConnection';
+import {ConnectionMock, ConnectionMockFactory} from './mocks/ConnectionMock';
 
 
 describe('$Http', function () {
@@ -67,11 +67,11 @@ describe('$Http', function () {
 
 
     it('should use ConnectionClass to instantiate a Connection', function() {
-      use(MockConnectionFactory);
+      use(ConnectionMockFactory);
       inject($Http, function($http) {
-        expect($http.ConnectionClass).toBe(MockConnection);
+        expect($http.ConnectionClass).toBe(ConnectionMock);
         var connection = $http.request('GET', '/users');
-        expect(connection).toBeInstanceOf(MockConnection);
+        expect(connection).toBeInstanceOf(ConnectionMock);
       });
     });
 

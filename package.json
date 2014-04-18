@@ -14,14 +14,14 @@
   "dependencies": {
     "traceur": "0.0.20",
     "di": "~2.0.0-pre-2",
-    "deferred": "git://github.com/jeffbcross/deferred",
-    "zone.js": "git://github.com/angular/zone.js"
+    "deferred": "git://github.com/angular/deferred"
   },
   "devDependencies": {
     "pipe": "angular/pipe",
     "assert": "angular/assert#dist",
     "gulp-connect": "~0.3.0",
-    "require": "~0.5.0"
+    "require": "~0.5.0",
+    "zone.js": "git://github.com/angular/zone.js"
   },
   "scripts": {
     "test": "karma start --single-run"

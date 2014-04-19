@@ -1,11 +1,17 @@
 import {$Http} from '../src/Http';
 import {assert} from 'assert';
 import {ConnectionMock, ConnectionMockBackend, ConnectionMockFactory, ResponseMap} from './mocks/ConnectionMock';
+import {Deferred} from 'deferred/Deferred';
 import {IConnection} from '../src/IConnection';
 import {inject, use} from 'di/testing';
 import {PromiseBackend} from 'deferred/PromiseMock';
 
 describe('ConnectionMockBackend', function() {
+  afterEach(function() {
+    delete ConnectionMockBackend.connections;
+  });
+
+
   describe('.whenRequest()', function() {
     it('should add the request signature to a class-level map', function() {
       ConnectionMockBackend.whenRequest('GET', '/users');
@@ -108,7 +114,6 @@ describe('ConnectionMockBackend', function() {
     it('should add the connection to an ordered list', function() {
       var connection1 = new ConnectionMock();
       var connection2 = new ConnectionMock();
-      ConnectionMockBackend.connections = [];
       ConnectionMockBackend.addConnection(connection1);
       ConnectionMockBackend.addConnection(connection2);
       expect(ConnectionMockBackend.connections[0]).toBe(connection1);
@@ -118,8 +123,7 @@ describe('ConnectionMockBackend', function() {
 
 
     it('should create the collections list if not exist', function() {
-      var connection = new ConnectionMock;
-      delete ConnectionMockBackend.connections;
+      var connection = new ConnectionMock();
       expect(ConnectionMockBackend.connections).toBeUndefined();
       ConnectionMockBackend.addConnection(connection);
       expect(ConnectionMockBackend.connections.length).toBe(1);
@@ -148,6 +152,11 @@ describe('ConnectionMockBackend', function() {
 
 
 describe('ConectionMock', function() {
+  afterEach(function() {
+    delete ConnectionMockBackend.connections;
+  });
+
+
   it('should implement IConnection', function() {
     assert.type(ConnectionMock, IConnection);
   });
@@ -161,12 +170,66 @@ describe('ConectionMock', function() {
       });
     });
   });
+
+
+  describe('constructor', function() {
+    it('should create a new deferred', function() {
+      assert.type(new ConnectionMock().deferred, Deferred);
+    });
+  });
+
+
+  describe('.open()', function() {
+    it('should set the method and url on the connection instance', function() {
+      var connection = new ConnectionMock();
+      expect(connection.method).toBeUndefined();
+      expect(connection.url).toBeUndefined();
+      connection.open('GET', '/users');
+      expect(connection.method).toBe('GET');
+      expect(connection.url).toBe('/users');
+    });
+
+    it('should complain if method is not a string', function() {
+      var connection = new ConnectionMock();
+      expect(function() {
+        connection.open(undefined, '/users');
+      }).toThrow();
+    });
+
+
+    it('should complain if url is not a string', function() {
+      var connection = new ConnectionMock();
+      expect(function() {
+        connection.open('GET', undefined);
+      }).toThrow();
+    });
+  });
+
+
+  describe('.send()', function() {
+    it('should add the connection to mock backend connections list', function() {
+      var connection = new ConnectionMock();
+      expect(ConnectionMockBackend.connections).toBeUndefined();
+      connection.open('GET', '/items');
+      expect(ConnectionMockBackend.connections).toBeUndefined();
+      connection.send();
+      expect(ConnectionMockBackend.connections.length).toBe(1);
+    });
+
+
+    it('should attach the data to the connection instance', function() {
+      var data = 'New Item';
+      var connection = new ConnectionMock();
+      connection.open('POST', '/items');
+      connection.send(data);
+      expect(connection.data).toBe(data);
+    });
+  });
 });
 
 
 describe('ResponseMap', function() {
   describe('constructor', function() {
-
     it('should set body and code values to null', function() {
       var responseMap = new ResponseMap();
       expect(responseMap.get('body')).toBe(null);

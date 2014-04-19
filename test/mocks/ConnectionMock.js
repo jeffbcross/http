@@ -37,9 +37,6 @@ export class ConnectionMockBackend {
     }
 
     connections.forEach(function(connection) {
-      if (!connection.sent_) {
-        return;
-      }
       if (responses.has(connection.method) &&
           responses.get(connection.method).has(connection.url)) {
 
@@ -85,13 +82,7 @@ export class ConnectionMockBackend {
 
 export class ConnectionMock {
   constructor() {
-    this.backend = new ConnectionMockBackend();
     this.deferred = new Deferred();
-    ConnectionMockBackend.addConnection(this);
-  }
-
-  send() {
-    this.sent_ = true;
   }
 
   open(method:string, url:string) {
@@ -99,16 +90,21 @@ export class ConnectionMock {
     this.url = url;
   }
 
+  send(data) {
+    this.data = data;
+    ConnectionMockBackend.addConnection(this);
+  }
+
   then(success, error) {
     this.deferred.promise.then.call(this.deferred.promise, success, error);
   }
 
   success() {
-
+    //TODO: implement
   }
 
   error() {
-
+    //TODO: implement
   }
 
 

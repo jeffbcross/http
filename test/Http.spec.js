@@ -1,5 +1,5 @@
 import {fullUrl, request} from '../src/Http';
-import {$Connection} from '../src/XHRConnection';
+import {XHRConnection} from '../src/XHRConnection';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';
@@ -8,8 +8,8 @@ import {ConnectionMock, ConnectionMockFactory} from './mocks/ConnectionMock';
 
 describe('request()', function() {
   beforeEach(function() {
-    this.openSpy = spyOn($Connection.prototype, 'open');
-    this.sendSpy = spyOn($Connection.prototype, 'send');
+    this.openSpy = spyOn(XHRConnection.prototype, 'open');
+    this.sendSpy = spyOn(XHRConnection.prototype, 'send');
   });
 
 
@@ -41,7 +41,7 @@ describe('request()', function() {
 
   it('should create a new Connection from XHRConnection if no ConnectionClass provided',
       function(){
-        expect(request('GET', '/users')).toBeInstanceOf($Connection);
+        expect(request('GET', '/users')).toBeInstanceOf(XHRConnection);
       });
 
 

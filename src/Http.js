@@ -1,4 +1,4 @@
-import {$Connection} from './XHRConnection';
+import {XHRConnection} from './XHRConnection';
 import {assert} from 'assert';
 import {serialize} from './Serialize';
 import {toQueryString} from './QueryParams';
@@ -11,7 +11,7 @@ function request(method, url, options) {
 
   queryParams = (options && options.params || {});
   requestData = (options && options.data);
-  connection = new (options && options.ConnectionClass || $Connection)();
+  connection = new (options && options.ConnectionClass || XHRConnection)();
   url = fullUrl(url, queryParams);
 
   connection.open(method, url);

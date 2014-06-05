@@ -1,7 +1,5 @@
-import {$ConnectionFactory} from '../../src/XHRConnection';
 import {Deferred} from 'deferred/Deferred';
 import {IConnection} from '../../src/IConnection';
-import {Provide} from 'di/annotations';
 import {PromiseBackend} from 'deferred/PromiseMock';
 
 export class ResponseMap extends Map {
@@ -108,11 +106,4 @@ export class ConnectionMock {
   }
 
 
-}
-
-@Provide($ConnectionFactory)
-export class ConnectionMockFactory {
-  constructor() {
-    return ConnectionMock;
-  }
 }

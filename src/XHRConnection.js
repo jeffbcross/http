@@ -16,7 +16,7 @@ var XHRDataTypes = assert.define('XHRDataTypes', (value) => {
 /**
  * Manages state of a single connection
  */
-export class $Connection {
+export class XHRConnection {
   constructor() {
     this.xhr_ = new XMLHttpRequest();
     this.deferred = new Deferred();

@@ -1,17 +1,17 @@
-import {$Connection} from '../src/XHRConnection';
+import {XHRConnection} from '../src/XHRConnection';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {inject} from 'di/testing';
 import {PromiseBackend, PromiseMock} from 'deferred/PromiseMock';
 
-describe('$Connection', function() {
+describe('XHRConnection', function() {
   it('should implement IConnection', function() {
-    assert.type($Connection, IConnection);
+    assert.type(XHRConnection, IConnection);
   });
 
   describe('constructor', function() {
     it('should create a promise for the connection', function() {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       expect(connection.promise instanceof Promise).toBe(true);
     });
   });
@@ -19,7 +19,7 @@ describe('$Connection', function() {
 
   describe('.open()', function() {
     it('should complain if no method provided', function() {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       expect(function() {
         connection.open(undefined, '/users');
       }).toThrow();
@@ -27,18 +27,18 @@ describe('$Connection', function() {
 
     it('should complain if provided method is not a string', function() {
       expect(function() {
-        var connection = new $Connection();
+        var connection = new XHRConnection();
         connection.open(undefined, '/users');
       }).toThrow();
       expect(function() {
-        var connection = new $Connection();
+        var connection = new XHRConnection();
         connection.open('GET', '/users');
       }).not.toThrow();
     });
 
 
     it('should set the method to the instance', function() {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/users');
       expect(connection.method).toBe('GET');
     });
@@ -46,25 +46,25 @@ describe('$Connection', function() {
 
     it('should complain if invalid url type provided', function() {
       expect(function() {
-        var connection = new $Connection();
+        var connection = new XHRConnection();
         connection.open('GET', undefined);
       }).toThrow();
       expect(function() {
-        var connection = new $Connection();
+        var connection = new XHRConnection();
         connection.open('GET', '/users');
       }).not.toThrow();
     });
 
 
     it('should set the url to the instance', function () {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/items');
       expect(connection.url).toBe('/items');
     });
 
 
     it('should complain if open is called more than once', function() {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/items');
       expect(function() {
         connection.open('GET', '/items');
@@ -76,7 +76,7 @@ describe('$Connection', function() {
   describe('.send()', function() {
     it('should add load and error event listeners', function() {
       var listenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/items');
       expect(listenerSpy).not.toHaveBeenCalled();
       connection.send();
@@ -92,7 +92,7 @@ describe('$Connection', function() {
 
     it('should accept no data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('POST', '/assets');
       connection.send();
       expect(spy).toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe('$Connection', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
       var buffer = new ArrayBuffer();
       var view = new DataView(buffer);
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('POST', '/assets');
       connection.send(view);
       expect(spy).toHaveBeenCalledWith(view);
@@ -113,7 +113,7 @@ describe('$Connection', function() {
     it('should accept Blob data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
       var blob = new Blob();
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('POST', '/assets');
       connection.send(blob);
       expect(spy).toHaveBeenCalledWith(blob);
@@ -122,7 +122,7 @@ describe('$Connection', function() {
 
     it('should accept Document data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       var doc = document.implementation.createDocument(null, 'doc');
       connection.open('POST', '/assets');
       connection.send(doc);
@@ -132,7 +132,7 @@ describe('$Connection', function() {
 
     it('should accept String data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       var body = 'POST ME!';
       connection.open('POST', '/assets');
       connection.send(body);
@@ -142,7 +142,7 @@ describe('$Connection', function() {
 
     it('should accept FormData data', function() {
       var spy = spyOn(XMLHttpRequest.prototype, 'send');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       var formData = new FormData();
       formData.append('user', 'Jeff');
       connection.open('POST', '/assets');
@@ -152,7 +152,7 @@ describe('$Connection', function() {
 
 
     it('should complain when given an invalid type of data', function() {
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('POST', '/assets');
       expect(function() {
         connection.send(5);
@@ -164,7 +164,7 @@ describe('$Connection', function() {
 
   describe('instance', function() {
     it('should be thenable at the instance level', function(){
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       expect(typeof connection.then).toBe('function');
     });
   });
@@ -172,7 +172,7 @@ describe('$Connection', function() {
 
   describe('.promise', function() {
     it('should return a promise', function() {
-      assert.type(new $Connection().promise, Promise);
+      assert.type(new XHRConnection().promise, Promise);
     })
   });
 
@@ -181,7 +181,7 @@ describe('$Connection', function() {
     it('should unregister load and error events', function() {
       var addListenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
       var removedListenerSpy = spyOn(XMLHttpRequest.prototype, 'removeEventListener');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/items');
       connection.send();
       expect(addListenerSpy.calls.count()).toBe(2);
@@ -195,7 +195,7 @@ describe('$Connection', function() {
 
     it('should resolve the deferred with the responseText', function() {
       var res = 'The time is 12:00pm';
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       var resolveSpy = spyOn(connection.deferred, 'resolve');
       connection.xhr_ = {responseText: res, removeEventListener: function(){}};
       connection.onLoad_.call(connection, {});
@@ -209,7 +209,7 @@ describe('$Connection', function() {
       var addListenerSpy = spyOn(XMLHttpRequest.prototype, 'addEventListener');
       var removedListenerSpy = spyOn(XMLHttpRequest.prototype, 'removeEventListener');
       var sendSpy = spyOn(XMLHttpRequest.prototype, 'send');
-      var connection = new $Connection();
+      var connection = new XHRConnection();
       connection.open('GET', '/items');
       connection.send();
       expect(addListenerSpy.calls.count()).toBe(2);

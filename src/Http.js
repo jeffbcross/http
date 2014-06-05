@@ -1,7 +1,7 @@
-import {toQueryString} from './QueryParams';
-import {$RequestData} from './RequestData';
 import {$Connection} from './XHRConnection';
 import {assert} from 'assert';
+import {serialize} from './Serialize';
+import {toQueryString} from './QueryParams';
 
 //TODO (@jeffbcross): support responseType in options
 function request(method, url, options) {
@@ -10,12 +10,12 @@ function request(method, url, options) {
   assert.type(url, assert.string);
 
   queryParams = (options && options.params || {});
-  requestData = new $RequestData(options && options.data);
+  requestData = (options && options.data);
   connection = new (options && options.ConnectionClass || $Connection)();
   url = fullUrl(url, queryParams);
 
   connection.open(method, url);
-  connection.send(requestData.serialize());
+  connection.send(serialize(requestData));
 
   return connection;
 }

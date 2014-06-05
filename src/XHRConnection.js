@@ -1,5 +1,3 @@
-import {$QueryParams} from './QueryParams';
-import {$RequestData} from './RequestData';
 import {Inject} from 'di/annotations';
 import {Injector} from 'di/injector';
 import {Deferred} from 'deferred/Deferred';

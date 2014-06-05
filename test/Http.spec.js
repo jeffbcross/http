@@ -1,6 +1,5 @@
 import {fullUrl, request} from '../src/Http';
 import {$Connection} from '../src/XHRConnection';
-import {$RequestData} from '../src/RequestData';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';

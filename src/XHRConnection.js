@@ -77,9 +77,3 @@ export class $Connection {
     this.xhr_.send(data);
   }
 }
-
-export class $ConnectionFactory {
-  constructor() {
-    return $Connection;
-  }
-}

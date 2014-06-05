@@ -1,4 +1,4 @@
-import {$Http, fullUrl} from '../src/Http';
+import {fullUrl, request} from '../src/Http';
 import {$Connection} from '../src/XHRConnection';
 import {$RequestData} from '../src/RequestData';
 import {$QueryParams} from '../src/QueryParams';
@@ -8,100 +8,69 @@ import {Injector} from 'di/injector';
 import {inject, use} from 'di/testing';
 import {ConnectionMock, ConnectionMockFactory} from './mocks/ConnectionMock';
 
-
-describe('$Http', function () {
-  describe('constructor', function() {
-    it('should add the Connection class to the service', inject(
-        $Http,
-        function($http) {
-          assert.type($http.ConnectionClass, IConnection);
-        }));
+describe('request()', function() {
+  beforeEach(function() {
+    this.openSpy = spyOn($Connection.prototype, 'open');
+    this.sendSpy = spyOn($Connection.prototype, 'send');
   });
 
 
-  describe('.request()', function() {
-    beforeEach(function() {
-      this.openSpy = spyOn($Connection.prototype, 'open');
-      this.sendSpy = spyOn($Connection.prototype, 'send');
-    });
+  it('should complain if method is not a string', function() {
+    expect(function() {
+      request(undefined, '/users')
+    }).toThrow();
+    expect(function() {
+      request('GET', '/users')
+    }).not.toThrow();
+  });
 
 
-    it('should complain if method is not a string', function() {
-      inject($Http, function($http) {
-        expect(function() {
-          $http.request(undefined, '/users')
-        }).toThrow();
-        expect(function() {
-          $http.request('GET', '/users')
-        }).not.toThrow();
+  it('should complain if url is not a string', function() {
+    expect(function() {
+      request('GET', undefined);
+    }).toThrow();
+    expect(function() {
+      request('GET', '/users');
+    }).not.toThrow();
+  });
+
+
+  it('should serialize data before calling open', function() {
+    request('GET', '/users', {data: {interests: 'JavaScript'}});
+    expect(this.sendSpy.calls.all()[0].args[0]).toBe('{"interests":"JavaScript"}');
+  });
+
+
+  it('should create a new Connection from XHRConnection if no ConnectionClass provided',
+      function(){
+        expect(request('GET', '/users')).toBeInstanceOf($Connection);
       });
+
+
+  it('should use provided ConnectionClass to instantiate a Connection', function() {
+    var connection = request('GET', '/users', {
+      ConnectionClass: ConnectionMock
     });
+    expect(connection).toBeInstanceOf(ConnectionMock);
+  });
 
 
-    it('should complain if url is not a string', function() {
-      inject($Http, function($http) {
-        expect(function() {
-          $http.request('GET', undefined);
-        }).toThrow();
-        expect(function() {
-          $http.request('GET', '/users')
-        }).not.toThrow();
-      });
-    });
+  it('should call open on the connection', function() {
+    request('GET', '/users');
+    expect(this.openSpy).toHaveBeenCalledWith('GET', '/users');
+  });
 
 
-    it('should serialize data before calling open', function() {
-      var self = this;
-      inject($Http, function($http) {
-        $http.request('GET', '/users', {data: {interests: 'JavaScript'}});
-        expect(self.sendSpy.calls.all()[0].args[0]).toBe('{"interests":"JavaScript"}');
-      });
-    });
+  it('should call send on the connection', function() {
+    request('GET', '/users');
+    expect(this.sendSpy).toHaveBeenCalled();
+  });
 
 
-    it('should create a new Connection', function(){
-      inject($Http, function($http) {
-        expect($http.request('GET', '/users')).toBeInstanceOf($Connection);
-      });
-    });
-
-
-    it('should use ConnectionClass to instantiate a Connection', function() {
-      use(ConnectionMockFactory);
-      inject($Http, function($http) {
-        expect($http.ConnectionClass).toBe(ConnectionMock);
-        var connection = $http.request('GET', '/users');
-        expect(connection).toBeInstanceOf(ConnectionMock);
-      });
-    });
-
-
-    it('should call open on the connection', function() {
-      var self = this;
-      inject($Http, function($http) {
-        $http.request('GET', '/users');
-        expect(self.openSpy).toHaveBeenCalledWith('GET', '/users');
-      });
-    });
-
-
-    it('should call send on the connection', function() {
-      var self = this;
-      inject($Http, function($http) {
-        $http.request('GET', '/users');
-        expect(self.sendSpy).toHaveBeenCalled();
-      });
-    });
-
-
-    it('should pass data to send', function() {
-      var self = this;
-      inject($Http, function($http) {
-        var data = '{"user" : "jeffbcross"}';
-        $http.request('GET', '/users', {data: data});
-        expect(self.sendSpy).toHaveBeenCalledWith(data);
-      });
-    });
+  it('should pass data to send', function() {
+    var data = '{"user" : "jeffbcross"}';
+    request('GET', '/users', {data: data});
+    expect(this.sendSpy).toHaveBeenCalledWith(data);
   });
 
 
@@ -109,14 +78,13 @@ describe('$Http', function () {
   //It's also bad because it relies on loading a Karma script
   //This test is merely a guide to make sure I don't lose my way
   xit('should actually execute the request', function(done) {
-    inject($Http, function($http) {
-      $http.request('GET', '/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js').
-      then(function(res) {
-        expect(res).toContain('monkey patch');
-        done();
-      }, function(reason){
-        throw new Error(reason);
-      });
+    request('GET', '/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js').
+    then(function(res) {
+      console.log('done!')
+      expect(res).toContain('monkey patch');
+      done();
+    }, function(reason){
+      throw new Error(reason);
     });
   });
 });

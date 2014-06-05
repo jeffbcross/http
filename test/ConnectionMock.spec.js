@@ -1,6 +1,6 @@
-import {$Http} from '../src/Http';
+import {request} from '../src/Http';
 import {assert} from 'assert';
-import {ConnectionMock, ConnectionMockBackend, ConnectionMockFactory, ResponseMap} from './mocks/ConnectionMock';
+import {ConnectionMock, ConnectionMockBackend, ResponseMap} from './mocks/ConnectionMock';
 import {Deferred} from 'deferred/Deferred';
 import {IConnection} from '../src/IConnection';
 import {inject, use} from 'di/testing';
@@ -162,16 +162,6 @@ describe('ConectionMock', function() {
   });
 
 
-  describe('@Provide', function() {
-    it('should be injectable into $Http', function() {
-      use(ConnectionMockFactory);
-      inject($Http, function($http) {
-        expect($http.ConnectionClass).toBe(ConnectionMock);
-      });
-    });
-  });
-
-
   describe('constructor', function() {
     it('should create a new deferred', function() {
       assert.type(new ConnectionMock().deferred, Deferred);
@@ -249,27 +239,11 @@ describe('ResponseMap', function() {
 
 
     it('should require code to be a number', function() {
-
     });
 
 
-    it('should require body to be a string');
-  });
-});
+    it('should require body to be a string', function() {
 
-
-describe('misplaced integration tests', function() {
-  it('should allow faking a response for a given method/url', function() {
-    use(ConnectionMockFactory);
-    inject($Http, function($http) {
-      ConnectionMockBackend.forkZone().run(function() {
-        var response = '{"users":["Jeff"]}';
-        var responseSpy = jasmine.createSpy();
-        ConnectionMockBackend.whenRequest('GET', '/users').respond(200, response);
-        $http.request('GET', '/users').then(responseSpy);
-        ConnectionMockBackend.flush();
-        expect(responseSpy).toHaveBeenCalledWith(response);
-      });
     });
   });
 });

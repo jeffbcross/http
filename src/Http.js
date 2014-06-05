@@ -1,4 +1,4 @@
-import {$QueryParams, toQueryString} from './QueryParams';
+import {toQueryString} from './QueryParams';
 import {$RequestData} from './RequestData';
 import {$Connection} from './XHRConnection';
 import {assert} from 'assert';
@@ -9,7 +9,7 @@ function request(method, url, options) {
   assert.type(method, assert.string);
   assert.type(url, assert.string);
 
-  queryParams = new $QueryParams(options && options.params || {});
+  queryParams = (options && options.params || {});
   requestData = new $RequestData(options && options.data);
   connection = new (options && options.ConnectionClass || $Connection)();
   url = fullUrl(url, queryParams);
@@ -20,7 +20,7 @@ function request(method, url, options) {
   return connection;
 }
 
-function fullUrl(url:string, params:$QueryParams) {
+function fullUrl(url:string, params) {
   return url + toQueryString(params, url.indexOf('?') > -1);
 }
 

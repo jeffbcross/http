@@ -1,7 +1,6 @@
 import {fullUrl, request} from '../src/Http';
 import {$Connection} from '../src/XHRConnection';
 import {$RequestData} from '../src/RequestData';
-import {$QueryParams} from '../src/QueryParams';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';
@@ -92,13 +91,13 @@ describe('request()', function() {
 
 describe('fullUrl()', function() {
   it('should serialize query parameters and add to url', function() {
-    var params = new $QueryParams({name: 'Jeff'});
+    var params = {name: 'Jeff'};
     expect(fullUrl('/users', params)).toBe('/users?name=Jeff');
   });
 
 
   it('should append query parameters if parameters already exist', function() {
-    var params = new $QueryParams({name: 'Jeff'});
+    var params = {name: 'Jeff'};
     expect(fullUrl('/users?hair=brown', params)).toBe('/users?hair=brown&name=Jeff');
   });
 });

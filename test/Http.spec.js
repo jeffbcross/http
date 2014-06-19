@@ -18,6 +18,16 @@ describe('Http', function() {
       expect(typeof http.request).toBe('function');
       expect(http.request.toString()).toContain('method, url, options');
     }));
+
+
+    it('should create a defaultInterceptors object', function() {
+      expect(http.globalInterceptors).toEqual({
+        request: [],
+        requestError: [],
+        response: [],
+        responseError: []
+      })
+    });
   });
 
 
@@ -84,6 +94,29 @@ describe('Http', function() {
       var data = '{"user" : "jeffbcross"}';
       http.request('GET', '/users', {data: data});
       expect(this.sendSpy).toHaveBeenCalledWith(data);
+    });
+
+
+    it('should send the request through the request interceptor', function() {
+      var spy = jasmine.createSpy('interceptor');
+      spy.and.returnValue({headers:{}});
+      http.globalInterceptors.request.push(spy);
+      http.request('GET', '/users', {})
+      expect(spy).toHaveBeenCalled();
+      http.globalInterceptors.request = [];
+    });
+
+
+    it('should apply request headers set in the interceptor', function() {
+      var headerSpy = spyOn(XHRConnection.prototype, 'setRequestHeader');
+      function interceptor(request) {
+        request.headers['Client'] = 'Browser';
+        return request;
+      }
+      http.globalInterceptors.request.push(interceptor);
+      http.request('GET', '/users');
+      expect(headerSpy).toHaveBeenCalledWith('Client', 'Browser');
+      http.globalInterceptors.request = [];
     });
 
 

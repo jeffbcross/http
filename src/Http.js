@@ -6,6 +6,12 @@ import {Provide} from 'di/annotations';
 
 class Http {
   constructor () {
+    this.globalInterceptors = {
+      request: [],
+      requestError: [],
+      response: [],
+      responseError: []
+    };
   }
 
   request (method:string, url:string, options) {
@@ -15,11 +21,26 @@ class Http {
 
     queryParams = (options && options.params || {});
     requestData = (options && options.data);
-    connection = new (options && options.ConnectionClass || XHRConnection)();
-    url = this.fullUrl(url, queryParams);
+    var request = {
+      method: method,
+      url: this.fullUrl(url, queryParams),
+      headers: {},
+      params: queryParams,
+      data: requestData
+    };
 
-    connection.open(method, url);
-    connection.send(serialize(requestData));
+    this.globalInterceptors.request.forEach(function(fn) {
+      request = fn(request);
+    });
+
+    connection = new (options && options.ConnectionClass || XHRConnection)();
+
+    Object.keys(request.headers).forEach(function(key) {
+      connection.setRequestHeader(key, request.headers[key]);
+    });
+
+    connection.open(request.method, request.url);
+    connection.send(serialize(request.data));
 
     return connection;
   }

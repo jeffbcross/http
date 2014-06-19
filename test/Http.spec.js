@@ -1,4 +1,4 @@
-import {Http, Request, fullUrl} from '../src/Http';
+import {Http, fullUrl} from '../src/Http';
 import {XHRConnection} from '../src/XHRConnection';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
@@ -155,7 +155,7 @@ describe('Http', function() {
           method: 'GET',
           url: '/users',
           ConnectionClass: ConnectionMock
-        }).then(null, spy);
+        });
         ConnectionMockBackend.flush();
         expect(spy).toHaveBeenCalled();
       });
@@ -192,22 +192,6 @@ describe('Http', function() {
       }).body).toBe('interceptedbody');
     });
   });
-
-
-  describe('._processResponseError()', function() {
-    it('should process a rejected response through globalInterceptors', function() {
-      http.globalInterceptors.responseError.push(function(response) {
-        response = response.replace('error', 'mistake');
-        return response;
-      });
-      expect(http._processResponseError('error: page not found')).toBe('mistake: page not found');
-    });
-  });
-});
-
-
-describe('Request', function() {
-
 });
 
 

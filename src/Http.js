@@ -4,16 +4,7 @@ import {serialize} from './Serialize';
 import {toQueryString} from './QueryParams';
 import {Provide} from 'di/annotations';
 import {IResponse} from './IResponse';
-
-class Request {
-  constructor ({method, url, params, data, headers}) {
-    this.method = method;
-    this.url = fullUrl(url, params || {});
-    this.params = params || {};
-    this.data = data;
-    this.headers = headers || {};
-  }
-}
+import {IRequest} from './IRequest';
 
 class Http {
   constructor () {
@@ -27,11 +18,18 @@ class Http {
 
   request (config) {
     var connection, request, promise, http = this;
-    var {method, url, params, data, headers} = config;
+    var {method, url, params, data, headers, responseType} = config;
     assert.type(method, assert.string);
     assert.type(url, assert.string);
 
-    request = new Request(config);
+    request = {
+      method: method,
+      url: url,
+      data: serialize(data),
+      responseType: responseType || 'text',
+      params: new Map(),
+      headers: new Map()
+    };
     request = this._processRequest(request);
     connection = new (config.ConnectionClass || XHRConnection)();
 
@@ -39,10 +37,11 @@ class Http {
       connection.setRequestHeader(key, request.headers[key]);
     });
 
-    connection.open(request.method, request.url);
-    connection.send(serialize(request.data));
+
 
     promise = new Promise(function(resolve, reject) {
+      connection.open(request.method, request.url);
+      connection.send(request.data);
       connection.then(function(response) {
         resolve(http._processResponse(response));
       }, function(reason) {
@@ -54,7 +53,7 @@ class Http {
     return promise;
   }
 
-  _processRequest (request:Request) {
+  _processRequest (request:IRequest) {
     this.globalInterceptors.request.forEach(function(fn) {
       request = fn(request);
     });
@@ -82,4 +81,4 @@ function fullUrl (url:string, params) {
   return url + toQueryString(params, url.indexOf('?') > -1);
 }
 
-export {Http, Request, fullUrl};
+export {Http, fullUrl};

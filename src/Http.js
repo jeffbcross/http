@@ -25,7 +25,7 @@ class Http {
   }
 
   request (config) {
-    var connection, request;
+    var connection, request, promise, http = this;
     var {method, url, params, data, headers} = config;
     assert.type(method, assert.string);
     assert.type(url, assert.string);
@@ -45,7 +45,19 @@ class Http {
     connection.open(request.method, request.url);
     connection.send(serialize(request.data));
 
-    return connection;
+    promise = new Promise(function(resolve, reject) {
+      connection.then(function(response) {
+        http.globalInterceptors.response.forEach(function(intcpt) {
+          response = intcpt(response);
+        });
+        resolve(response);
+      }, function(reason) {
+
+      });
+    });
+    promise.connection = connection;
+
+    return promise;
   }
 }
 

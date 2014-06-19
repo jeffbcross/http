@@ -4,13 +4,14 @@ import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';
 import {inject, use} from 'di/testing';
-import {ConnectionMock, ConnectionMockFactory} from './mocks/ConnectionMock';
+import {ConnectionMock, ConnectionMockBackend, ConnectionMockFactory} from './mocks/ConnectionMock';
 
 describe('Http', function() {
-  var http;
+  var http, defaultConfig;
 
   beforeEach(inject(Http, function(_http_) {
-    http = _http_
+    defaultConfig = {method: 'GET', url: '/users'};
+    http = _http_;
   }));
 
   describe('constructor', function() {
@@ -42,7 +43,7 @@ describe('Http', function() {
         http.request({method: undefined, url: '/users'});
       }).toThrow();
       expect(function() {
-        http.request({method: 'GET', url: '/users'});
+        http.request(defaultConfig);
       }).not.toThrow();
     });
 
@@ -52,7 +53,7 @@ describe('Http', function() {
         http.request({method: 'GET', url: undefined});
       }).toThrow();
       expect(function() {
-        http.request({method: 'GET', url: '/users'});
+        http.request(defaultConfig);
       }).not.toThrow();
     });
 
@@ -65,26 +66,31 @@ describe('Http', function() {
 
     it('should create a new Connection from XHRConnection if no ConnectionClass provided',
         function(){
-          expect(http.request({method: 'GET', url:'/users'})).toBeInstanceOf(XHRConnection);
+          expect(http.request(defaultConfig).connection).toBeInstanceOf(XHRConnection);
         });
 
 
     it('should use provided ConnectionClass to instantiate a Connection', function() {
-      var connection = http.request({method: 'GET', url: '/users',
+      var request = http.request({method: 'GET', url: '/users',
         ConnectionClass: ConnectionMock
       });
-      expect(connection).toBeInstanceOf(ConnectionMock);
+      expect(request.connection).toBeInstanceOf(ConnectionMock);
+    });
+
+
+    it('should return a promise', function() {
+      assert.type(http.request(defaultConfig).then, Function);
     });
 
 
     it('should call open on the connection', function() {
-      http.request({method: 'GET', url:'/users'});
+      http.request(defaultConfig);
       expect(this.openSpy).toHaveBeenCalledWith('GET', '/users');
     });
 
 
     it('should call send on the connection', function() {
-      http.request({method: 'GET', url:'/users'});
+      http.request(defaultConfig);
       expect(this.sendSpy).toHaveBeenCalled();
     });
 
@@ -100,9 +106,8 @@ describe('Http', function() {
       var spy = jasmine.createSpy('interceptor');
       spy.and.returnValue({headers:{}});
       http.globalInterceptors.request.push(spy);
-      http.request({method: 'GET', url:'/users'});
+      http.request(defaultConfig);
       expect(spy).toHaveBeenCalled();
-      http.globalInterceptors.request = [];
     });
 
 
@@ -113,9 +118,8 @@ describe('Http', function() {
         return request;
       }
       http.globalInterceptors.request.push(interceptor);
-      http.request({method: 'GET', url: '/users'});
+      http.request(defaultConfig);
       expect(headerSpy).toHaveBeenCalledWith('Client', 'Browser');
-      http.globalInterceptors.request = [];
     });
 
 
@@ -125,11 +129,31 @@ describe('Http', function() {
     xit('should actually execute the request', function(done) {
       http.request('GET', '/base/node_modules/pipe/node_modules/karma-requirejs/lib/adapter.js').
       then(function(res) {
-        console.log('done!')
         expect(res).toContain('monkey patch');
         done();
       }, function(reason){
         throw new Error(reason);
+      });
+    });
+  });
+
+
+  describe('._processResponse()', function() {
+    it('should process the response through globalInterceptors', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = jasmine.createSpy('responseHandler');
+        http.globalInterceptors.response.push(function(response) {
+          response = response.replace('raw','intercepted');
+          return response;
+        });
+        ConnectionMockBackend.whenRequest('GET', '/users').respond(200, 'rawbody');
+        http.request({
+          method: 'GET',
+          url: '/users',
+          ConnectionClass: ConnectionMock
+        }).then(spy);
+        ConnectionMockBackend.flush();
+        expect(spy.calls.argsFor(0)[0]).toBe('interceptedbody');
       });
     });
   });

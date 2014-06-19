@@ -180,10 +180,16 @@ describe('Http', function() {
   describe('._processResponse()', function() {
     it('should process the response through globalInterceptors', function() {
       http.globalInterceptors.response.push(function(response) {
-        response = response.replace('raw','intercepted');
+        response.body = response.body.replace('raw','intercepted');
         return response;
       });
-      expect(http._processResponse('rawbody')).toBe('interceptedbody');
+      expect(http._processResponse({
+        body: 'rawbody',
+        responseType: 'text',
+        responseText: 'rawbody',
+        status: 200,
+        headers: new Map(),
+      }).body).toBe('interceptedbody');
     });
   });
 

@@ -3,6 +3,7 @@ import {assert} from 'assert';
 import {serialize} from './Serialize';
 import {toQueryString} from './QueryParams';
 import {Provide} from 'di/annotations';
+import {IResponse} from './IResponse';
 
 class Request {
   constructor ({method, url, params, data, headers}) {
@@ -61,7 +62,7 @@ class Http {
   }
 
   //TODO: handle normalized response object, pending implementation
-  _processResponse (response) {
+  _processResponse (response:IResponse) {
     this.globalInterceptors.response.forEach(function(intcpt) {
       response = intcpt(response);
     });

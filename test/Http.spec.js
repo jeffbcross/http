@@ -1,4 +1,4 @@
-import {Http} from '../src/Http';
+import {Http, Request, fullUrl} from '../src/Http';
 import {XHRConnection} from '../src/XHRConnection';
 import {assert} from 'assert';
 import {IConnection} from '../src/IConnection';
@@ -15,8 +15,7 @@ describe('Http', function() {
 
   describe('constructor', function() {
     it('should be injectable', inject(Http, function(http) {
-      expect(typeof http.request).toBe('function');
-      expect(http.request.toString()).toContain('method, url, options');
+      assert.type(http.request, Function);
     }));
 
 
@@ -40,38 +39,38 @@ describe('Http', function() {
 
     it('should complain if method is not a string', function() {
       expect(function() {
-        http.request(undefined, '/users')
+        http.request({method: undefined, url: '/users'});
       }).toThrow();
       expect(function() {
-        http.request('GET', '/users')
+        http.request({method: 'GET', url: '/users'});
       }).not.toThrow();
     });
 
 
     it('should complain if url is not a string', function() {
       expect(function() {
-        http.request('GET', undefined);
+        http.request({method: 'GET', url: undefined});
       }).toThrow();
       expect(function() {
-        http.request('GET', '/users');
+        http.request({method: 'GET', url: '/users'});
       }).not.toThrow();
     });
 
 
     it('should serialize data before calling open', function() {
-      http.request('GET', '/users', {data: {interests: 'JavaScript'}});
+      http.request({method: 'GET', url: '/users', data: {interests: 'JavaScript'}});
       expect(this.sendSpy.calls.all()[0].args[0]).toBe('{"interests":"JavaScript"}');
     });
 
 
     it('should create a new Connection from XHRConnection if no ConnectionClass provided',
         function(){
-          expect(http.request('GET', '/users')).toBeInstanceOf(XHRConnection);
+          expect(http.request({method: 'GET', url:'/users'})).toBeInstanceOf(XHRConnection);
         });
 
 
     it('should use provided ConnectionClass to instantiate a Connection', function() {
-      var connection = http.request('GET', '/users', {
+      var connection = http.request({method: 'GET', url: '/users',
         ConnectionClass: ConnectionMock
       });
       expect(connection).toBeInstanceOf(ConnectionMock);
@@ -79,20 +78,20 @@ describe('Http', function() {
 
 
     it('should call open on the connection', function() {
-      http.request('GET', '/users');
+      http.request({method: 'GET', url:'/users'});
       expect(this.openSpy).toHaveBeenCalledWith('GET', '/users');
     });
 
 
     it('should call send on the connection', function() {
-      http.request('GET', '/users');
+      http.request({method: 'GET', url:'/users'});
       expect(this.sendSpy).toHaveBeenCalled();
     });
 
 
     it('should pass data to send', function() {
       var data = '{"user" : "jeffbcross"}';
-      http.request('GET', '/users', {data: data});
+      http.request({method: 'GET', url: '/users', data: data});
       expect(this.sendSpy).toHaveBeenCalledWith(data);
     });
 
@@ -101,7 +100,7 @@ describe('Http', function() {
       var spy = jasmine.createSpy('interceptor');
       spy.and.returnValue({headers:{}});
       http.globalInterceptors.request.push(spy);
-      http.request('GET', '/users');
+      http.request({method: 'GET', url:'/users'});
       expect(spy).toHaveBeenCalled();
       http.globalInterceptors.request = [];
     });
@@ -114,7 +113,7 @@ describe('Http', function() {
         return request;
       }
       http.globalInterceptors.request.push(interceptor);
-      http.request('GET', '/users');
+      http.request({method: 'GET', url: '/users'});
       expect(headerSpy).toHaveBeenCalledWith('Client', 'Browser');
       http.globalInterceptors.request = [];
     });
@@ -134,18 +133,23 @@ describe('Http', function() {
       });
     });
   });
+});
 
 
-  describe('fullUrl()', function() {
-    it('should serialize query parameters and add to url', function() {
-      var params = {name: 'Jeff'};
-      expect(http.fullUrl('/users', params)).toBe('/users?name=Jeff');
-    });
+describe('Request', function() {
+
+});
 
 
-    it('should append query parameters if parameters already exist', function() {
-      var params = {name: 'Jeff'};
-      expect(http.fullUrl('/users?hair=brown', params)).toBe('/users?hair=brown&name=Jeff');
-    });
+describe('fullUrl()', function() {
+  it('should serialize query parameters and add to url', function() {
+    var params = {name: 'Jeff'};
+    expect(fullUrl('/users', params)).toBe('/users?name=Jeff');
+  });
+
+
+  it('should append query parameters if parameters already exist', function() {
+    var params = {name: 'Jeff'};
+    expect(fullUrl('/users?hair=brown', params)).toBe('/users?hair=brown&name=Jeff');
   });
 });

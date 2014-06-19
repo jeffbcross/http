@@ -4,6 +4,16 @@ import {serialize} from './Serialize';
 import {toQueryString} from './QueryParams';
 import {Provide} from 'di/annotations';
 
+class Request {
+  constructor ({method, url, params, data, headers}) {
+    this.method = method;
+    this.url = fullUrl(url, params || {});
+    this.params = params || {};
+    this.data = data;
+    this.headers = headers || {};
+  }
+}
+
 class Http {
   constructor () {
     this.globalInterceptors = {
@@ -14,26 +24,19 @@ class Http {
     };
   }
 
-  request (method:string, url:string, options) {
-    var queryParams, requestData, connection;
+  request (config) {
+    var connection, request;
+    var {method, url, params, data, headers} = config;
     assert.type(method, assert.string);
     assert.type(url, assert.string);
 
-    queryParams = (options && options.params || {});
-    requestData = (options && options.data);
-    var request = {
-      method: method,
-      url: this.fullUrl(url, queryParams),
-      headers: {},
-      params: queryParams,
-      data: requestData
-    };
+    request = new Request(config);
 
     this.globalInterceptors.request.forEach(function(fn) {
       request = fn(request);
     });
 
-    connection = new (options && options.ConnectionClass || XHRConnection)();
+    connection = new (config.ConnectionClass || XHRConnection)();
 
     Object.keys(request.headers).forEach(function(key) {
       connection.setRequestHeader(key, request.headers[key]);
@@ -44,10 +47,10 @@ class Http {
 
     return connection;
   }
-
-  fullUrl (url:string, params) {
-    return url + toQueryString(params, url.indexOf('?') > -1);
-  }
 }
 
-export {Http};
+function fullUrl (url:string, params) {
+  return url + toQueryString(params, url.indexOf('?') > -1);
+}
+
+export {Http, Request, fullUrl};

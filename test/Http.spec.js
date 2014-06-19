@@ -123,6 +123,45 @@ describe('Http', function() {
     });
 
 
+    it('should call _processRequest with the Request object', function() {
+      var spy = spyOn(http, '_processRequest').and.callThrough();
+      http.request({method: 'GET', url: '/something'});
+      expect(spy).toHaveBeenCalled();
+      expect(spy.calls.argsFor(0)[0].method).toBe('GET');
+      expect(spy.calls.argsFor(0)[0].url).toBe('/something');
+    });
+
+
+    it('should call _processResponse with the raw response upon successful request', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = spyOn(http, '_processResponse');
+        ConnectionMockBackend.whenRequest('GET', '/users').respond(200, 'rawbody');
+        http.request({
+          method: 'GET',
+          url: '/users',
+          ConnectionClass: ConnectionMock
+        }).then(spy);
+        ConnectionMockBackend.flush();
+        expect(spy).toHaveBeenCalled();
+      });
+    });
+
+
+    it('should call _processResponseError with the raw response upon successful request', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = spyOn(http, '_processResponseError');
+        ConnectionMockBackend.whenRequest('GET', '/users').respond(404, 'error: not found');
+        http.request({
+          method: 'GET',
+          url: '/users',
+          ConnectionClass: ConnectionMock
+        }).then(null, spy);
+        ConnectionMockBackend.flush();
+        expect(spy).toHaveBeenCalled();
+      });
+    });
+
+
     //TODO (jeffbcross): this is a badly-placed test, does not belong in unit
     //It's also bad because it relies on loading a Karma script
     //This test is merely a guide to make sure I don't lose my way
@@ -140,21 +179,22 @@ describe('Http', function() {
 
   describe('._processResponse()', function() {
     it('should process the response through globalInterceptors', function() {
-      ConnectionMockBackend.forkZone().run(function() {
-        var spy = jasmine.createSpy('responseHandler');
-        http.globalInterceptors.response.push(function(response) {
-          response = response.replace('raw','intercepted');
-          return response;
-        });
-        ConnectionMockBackend.whenRequest('GET', '/users').respond(200, 'rawbody');
-        http.request({
-          method: 'GET',
-          url: '/users',
-          ConnectionClass: ConnectionMock
-        }).then(spy);
-        ConnectionMockBackend.flush();
-        expect(spy.calls.argsFor(0)[0]).toBe('interceptedbody');
+      http.globalInterceptors.response.push(function(response) {
+        response = response.replace('raw','intercepted');
+        return response;
       });
+      expect(http._processResponse('rawbody')).toBe('interceptedbody');
+    });
+  });
+
+
+  describe('._processResponseError()', function() {
+    it('should process a rejected response through globalInterceptors', function() {
+      http.globalInterceptors.responseError.push(function(response) {
+        response = response.replace('error', 'mistake');
+        return response;
+      });
+      expect(http._processResponseError('error: page not found')).toBe('mistake: page not found');
     });
   });
 });

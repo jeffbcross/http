@@ -31,11 +31,7 @@ class Http {
     assert.type(url, assert.string);
 
     request = new Request(config);
-
-    this.globalInterceptors.request.forEach(function(fn) {
-      request = fn(request);
-    });
-
+    request = this._processRequest(request);
     connection = new (config.ConnectionClass || XHRConnection)();
 
     Object.keys(request.headers).forEach(function(key) {
@@ -47,17 +43,37 @@ class Http {
 
     promise = new Promise(function(resolve, reject) {
       connection.then(function(response) {
-        http.globalInterceptors.response.forEach(function(intcpt) {
-          response = intcpt(response);
-        });
-        resolve(response);
+        resolve(http._processResponse(response));
       }, function(reason) {
-
+        reject(http._processResponseError(reason));
       });
     });
     promise.connection = connection;
 
     return promise;
+  }
+
+  _processRequest (request:Request) {
+    this.globalInterceptors.request.forEach(function(fn) {
+      request = fn(request);
+    });
+    return request;
+  }
+
+  //TODO: handle normalized response object, pending implementation
+  _processResponse (response) {
+    this.globalInterceptors.response.forEach(function(intcpt) {
+      response = intcpt(response);
+    });
+    return response;
+  }
+
+  //TODO: handle normalized response object, pending implementation
+  _processResponseError (response) {
+    this.globalInterceptors.responseError.forEach(function(intcpt) {
+      response = intcpt(response);
+    });
+    return response;
   }
 }
 

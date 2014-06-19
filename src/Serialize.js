@@ -2,8 +2,11 @@ function serialize (data) {
   if (data instanceof Object) {
     return JSON.stringify(data);
   }
-  else {
+  else if (data) {
     return data;
+  }
+  else {
+    return '';
   }
 }
 

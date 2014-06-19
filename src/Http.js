@@ -28,7 +28,7 @@ class Http {
       params: new Map(),
       headers: new Map()
     };
-    request = this._processRequest(request);
+    request = this.interceptRequest(request);
     connection = new (config.ConnectionClass || XHRConnection)();
 
     Object.keys(request.headers).forEach(function(key) {
@@ -39,9 +39,9 @@ class Http {
       connection.open(request.method, request.url);
       connection.send(request.data);
       connection.then(function(response) {
-        resolve(http._processResponse(undefined, request, response));
+        resolve(http.interceptResponse(undefined, request, response));
       }, function(reason) {
-        reject(http._processResponse(reason, request));
+        reject(http.interceptResponse(reason, request));
       });
     });
 
@@ -52,14 +52,14 @@ class Http {
     return promise;
   }
 
-  _processRequest (request:IRequest) {
+  interceptRequest (request:IRequest) {
     this.globalInterceptors.request.forEach(function(fn) {
       request = fn(request);
     });
     return request;
   }
 
-  _processResponse (err, req:IRequest, res) {
+  interceptResponse (err, req:IRequest, res) {
     var http = this;
     if (res) assert.type(res, IResponse);
     return new Promise(function(resolve, reject) {

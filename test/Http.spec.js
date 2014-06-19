@@ -122,8 +122,8 @@ describe('Http', function() {
     });
 
 
-    it('should call _processRequest with the Request object', function() {
-      var spy = spyOn(http, '_processRequest').and.callThrough();
+    it('should call interceptRequest with the Request object', function() {
+      var spy = spyOn(http, 'interceptRequest').and.callThrough();
       http.request({method: 'GET', url: '/something'});
       expect(spy).toHaveBeenCalled();
       expect(spy.calls.argsFor(0)[0].method).toBe('GET');
@@ -131,9 +131,9 @@ describe('Http', function() {
     });
 
 
-    it('should call _processResponse with the raw response upon successful request', function() {
+    it('should call interceptResponse with the raw response upon successful request', function() {
       ConnectionMockBackend.forkZone().run(function() {
-        var spy = spyOn(http, '_processResponse');
+        var spy = spyOn(http, 'interceptResponse');
         ConnectionMockBackend.whenRequest('GET', '/users').respond(200, 'rawbody');
         http.request({
           method: 'GET',
@@ -146,9 +146,9 @@ describe('Http', function() {
     });
 
 
-    it('should call _processResponse with an error failure', function() {
+    it('should call interceptResponse with an error failure', function() {
       ConnectionMockBackend.forkZone().run(function() {
-        var spy = spyOn(http, '_processResponse');
+        var spy = spyOn(http, 'interceptResponse');
         ConnectionMockBackend.whenRequest('GET', '/users').respond(404, 'error: not found');
         http.request({
           method: 'GET',
@@ -176,7 +176,7 @@ describe('Http', function() {
   });
 
 
-  describe('._processResponse()', function() {
+  describe('.interceptResponse()', function() {
     var sampleResponse, sampleRequest;
 
     beforeEach(function() {
@@ -199,7 +199,7 @@ describe('Http', function() {
     })
 
     it('should return a promise', function() {
-      assert.type(http._processResponse(undefined, sampleRequest, sampleResponse).then, Function);
+      assert.type(http.interceptResponse(undefined, sampleRequest, sampleResponse).then, Function);
     });
 
 
@@ -211,7 +211,7 @@ describe('Http', function() {
           res.body = res.body.replace('raw','intercepted');
           next();
         });
-        http._processResponse(undefined, sampleRequest, {
+        http.interceptResponse(undefined, sampleRequest, {
           body: 'rawbody',
           responseType: 'text',
           responseText: 'rawbody',
@@ -234,7 +234,7 @@ describe('Http', function() {
           res.body = res.body.replace('raw','intercepted');
           next();
         });
-        http._processResponse(error, sampleRequest, {
+        http.interceptResponse(error, sampleRequest, {
           body: 'rawbody',
           responseType: 'text',
           responseText: 'rawbody',
@@ -257,7 +257,7 @@ describe('Http', function() {
           res.body = res.body.replace('raw','intercepted');
           next(error);
         });
-        http._processResponse(undefined, sampleRequest, {
+        http.interceptResponse(undefined, sampleRequest, {
           body: 'rawbody',
           responseType: 'text',
           responseText: 'rawbody',

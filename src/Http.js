@@ -10,9 +10,7 @@ class Http {
   constructor () {
     this.globalInterceptors = {
       request: [],
-      requestError: [],
-      response: [],
-      responseError: []
+      response: []
     };
   }
 
@@ -37,17 +35,18 @@ class Http {
       connection.setRequestHeader(key, request.headers[key]);
     });
 
-
-
     promise = new Promise(function(resolve, reject) {
       connection.open(request.method, request.url);
       connection.send(request.data);
       connection.then(function(response) {
-        resolve(http._processResponse(response));
+        resolve(http._processResponse(undefined, request, response));
       }, function(reason) {
-        reject(http._processResponseError(reason));
+        reject(http._processResponse(reason, request));
       });
     });
+
+    // TODO: Remove connection from promise.
+    // Only here to verify which Connection was used
     promise.connection = connection;
 
     return promise;
@@ -60,20 +59,21 @@ class Http {
     return request;
   }
 
-  //TODO: handle normalized response object, pending implementation
-  _processResponse (response:IResponse) {
-    this.globalInterceptors.response.forEach(function(intcpt) {
-      response = intcpt(response);
+  _processResponse (err, req:IRequest, res) {
+    var http = this;
+    if (res) assert.type(res, IResponse);
+    return new Promise(function(resolve, reject) {
+      var i = 0;
+      function callNext(error) {
+        err = error || err;
+        if (i === http.globalInterceptors.response.length) {
+          if (err) return reject(err);
+          resolve(res);
+        }
+        http.globalInterceptors.response[i++](err, req, res, callNext);
+      }
+      callNext();
     });
-    return response;
-  }
-
-  //TODO: handle normalized response object, pending implementation
-  _processResponseError (response) {
-    this.globalInterceptors.responseError.forEach(function(intcpt) {
-      response = intcpt(response);
-    });
-    return response;
   }
 }
 

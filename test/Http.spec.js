@@ -5,6 +5,7 @@ import {IConnection} from '../src/IConnection';
 import {Injector} from 'di/injector';
 import {inject, use} from 'di/testing';
 import {ConnectionMock, ConnectionMockBackend, ConnectionMockFactory} from './mocks/ConnectionMock';
+import {PromiseBackend} from 'deferred/PromiseMock';
 
 describe('Http', function() {
   var http, defaultConfig;
@@ -23,10 +24,8 @@ describe('Http', function() {
     it('should create a defaultInterceptors object', function() {
       expect(http.globalInterceptors).toEqual({
         request: [],
-        requestError: [],
-        response: [],
-        responseError: []
-      })
+        response: []
+      });
     });
   });
 
@@ -147,9 +146,9 @@ describe('Http', function() {
     });
 
 
-    it('should call _processResponseError with the raw response upon successful request', function() {
+    it('should call _processResponse with an error failure', function() {
       ConnectionMockBackend.forkZone().run(function() {
-        var spy = spyOn(http, '_processResponseError');
+        var spy = spyOn(http, '_processResponse');
         ConnectionMockBackend.whenRequest('GET', '/users').respond(404, 'error: not found');
         http.request({
           method: 'GET',
@@ -157,7 +156,7 @@ describe('Http', function() {
           ConnectionClass: ConnectionMock
         });
         ConnectionMockBackend.flush();
-        expect(spy).toHaveBeenCalled();
+        expect(spy.calls.argsFor(0)[0]).toBe('error: not found');
       });
     });
 
@@ -178,18 +177,97 @@ describe('Http', function() {
 
 
   describe('._processResponse()', function() {
-    it('should process the response through globalInterceptors', function() {
-      http.globalInterceptors.response.push(function(response) {
-        response.body = response.body.replace('raw','intercepted');
-        return response;
-      });
-      expect(http._processResponse({
-        body: 'rawbody',
-        responseType: 'text',
-        responseText: 'rawbody',
-        status: 200,
+    var sampleResponse, sampleRequest;
+
+    beforeEach(function() {
+      sampleRequest = {
+        method: 'GET',
+        url: '/users',
         headers: new Map(),
-      }).body).toBe('interceptedbody');
+        params: new Map(),
+        responseType: 'text',
+        data: ''
+      };
+
+      sampleResponse = {
+        headers: new Map(),
+        body: 'foo',
+        responseType: 'text',
+        responseText: 'foo',
+        status: 200
+      }
+    })
+
+    it('should return a promise', function() {
+      assert.type(http._processResponse(undefined, sampleRequest, sampleResponse).then, Function);
+    });
+
+
+    it('should process the response through globalInterceptors', function() {
+      PromiseBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        http.globalInterceptors.response.push(function(err, req, res, next) {
+          res.body = res.body.replace('raw','intercepted');
+          next();
+        });
+        http._processResponse(undefined, sampleRequest, {
+          body: 'rawbody',
+          responseType: 'text',
+          responseText: 'rawbody',
+          status: 200,
+          headers: new Map(),
+        }).then(goodSpy);
+        PromiseBackend.flush(true);
+        expect(goodSpy.calls.argsFor(0)[0].body).toBe('interceptedbody');
+        expect(badSpy).not.toHaveBeenCalled();
+      });
+    });
+
+
+    it('should call reject if called with an error object', function() {
+      PromiseBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        var error = {foo: 'bar'};
+        http.globalInterceptors.response.push(function(err, req, res, next) {
+          res.body = res.body.replace('raw','intercepted');
+          next();
+        });
+        http._processResponse(error, sampleRequest, {
+          body: 'rawbody',
+          responseType: 'text',
+          responseText: 'rawbody',
+          status: 200,
+          headers: new Map(),
+        }).then(goodSpy, badSpy);
+        PromiseBackend.flush(true);
+        expect(badSpy).toHaveBeenCalledWith(error);
+        expect(goodSpy).not.toHaveBeenCalled();
+      });
+    });
+
+
+    it('should call reject if an error is ever passed to next', function() {
+      PromiseBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        var error = {foo: 'bar'};
+        http.globalInterceptors.response.push(function(err, req, res, next) {
+          res.body = res.body.replace('raw','intercepted');
+          next(error);
+        });
+        http._processResponse(undefined, sampleRequest, {
+          body: 'rawbody',
+          responseType: 'text',
+          responseText: 'rawbody',
+          status: 200,
+          headers: new Map(),
+        }).then(goodSpy, badSpy);
+        PromiseBackend.flush(true);
+        expect(badSpy).toHaveBeenCalledWith(error);
+        expect(goodSpy).not.toHaveBeenCalled();
+      });
     });
   });
 });

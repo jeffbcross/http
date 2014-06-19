@@ -66,7 +66,7 @@ export class XHRConnection {
   }
 
   setRequestHeader (key:string, value:string) {
-    //TODO: implement
+    this.xhr_.setRequestHeader(key, value);
   }
 
   send (data) {

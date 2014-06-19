@@ -101,7 +101,7 @@ describe('Http', function() {
       var spy = jasmine.createSpy('interceptor');
       spy.and.returnValue({headers:{}});
       http.globalInterceptors.request.push(spy);
-      http.request('GET', '/users', {})
+      http.request('GET', '/users');
       expect(spy).toHaveBeenCalled();
       http.globalInterceptors.request = [];
     });

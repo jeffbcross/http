@@ -31,35 +31,39 @@ describe('Http', function() {
 
 
   describe('request()', function() {
+    var openSpy, sendSpy;
     beforeEach(function() {
-      this.openSpy = spyOn(XHRConnection.prototype, 'open');
-      this.sendSpy = spyOn(XHRConnection.prototype, 'send');
+      openSpy = spyOn(XHRConnection.prototype, 'open');
+      sendSpy = spyOn(XHRConnection.prototype, 'send');
     });
 
 
     it('should complain if method is not a string', function() {
-      expect(function() {
-        http.request({method: undefined, url: '/users'});
-      }).toThrow();
-      expect(function() {
-        http.request(defaultConfig);
-      }).not.toThrow();
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = jasmine.createSpy('rejectSpy');
+        http.request({method: undefined, url: '/users'}).then(null, spy);
+        PromiseBackend.flush(true);
+        expect(spy).toHaveBeenCalled();
+      });
     });
 
 
     it('should complain if url is not a string', function() {
-      expect(function() {
-        http.request({method: 'GET', url: undefined});
-      }).toThrow();
-      expect(function() {
-        http.request(defaultConfig);
-      }).not.toThrow();
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = jasmine.createSpy('rejectSpy');
+        http.request({method: 'GET', url: undefined}).then(null, spy);
+        PromiseBackend.flush(true);
+        expect(spy).toHaveBeenCalled();
+      });
     });
 
 
     it('should serialize data before calling open', function() {
-      http.request({method: 'GET', url: '/users', data: {interests: 'JavaScript'}});
-      expect(this.sendSpy.calls.all()[0].args[0]).toBe('{"interests":"JavaScript"}');
+      ConnectionMockBackend.forkZone().run(function() {
+        http.request({method: 'GET', url: '/users', data: {interests: 'JavaScript'}});
+        PromiseBackend.flush(true);
+        expect(sendSpy.calls.all()[0].args[0]).toBe('{"interests":"JavaScript"}');
+      });
     });
 
 
@@ -70,10 +74,13 @@ describe('Http', function() {
 
 
     it('should use provided ConnectionClass to instantiate a Connection', function() {
-      var request = http.request({method: 'GET', url: '/users',
-        ConnectionClass: ConnectionMock
+      ConnectionMockBackend.forkZone().run(function() {
+        var request = http.request({method: 'GET', url: '/users',
+          ConnectionClass: ConnectionMock
+        });
+        PromiseBackend.flush(true);
+        expect(request.connection).toBeInstanceOf(ConnectionMock);
       });
-      expect(request.connection).toBeInstanceOf(ConnectionMock);
     });
 
 
@@ -83,21 +90,31 @@ describe('Http', function() {
 
 
     it('should call open on the connection', function() {
-      http.request(defaultConfig);
-      expect(this.openSpy).toHaveBeenCalledWith('GET', '/users');
+      ConnectionMockBackend.forkZone().run(function() {
+        http.request(defaultConfig);
+        PromiseBackend.flush(true);
+        expect(openSpy).toHaveBeenCalledWith('GET', '/users');
+      });
     });
 
 
     it('should call send on the connection', function() {
-      http.request(defaultConfig);
-      expect(this.sendSpy).toHaveBeenCalled();
+      ConnectionMockBackend.forkZone().run(function() {
+        http.request(defaultConfig);
+        PromiseBackend.flush(true);
+        expect(sendSpy).toHaveBeenCalled();
+      });
     });
 
 
     it('should pass data to send', function() {
-      var data = '{"user" : "jeffbcross"}';
-      http.request({method: 'GET', url: '/users', data: data});
-      expect(this.sendSpy).toHaveBeenCalledWith(data);
+      ConnectionMockBackend.forkZone().run(function() {
+        var data = '{"user" : "jeffbcross"}';
+        http.request({method: 'GET', url: '/users', data: data});
+        PromiseBackend.flush(true);
+        expect(sendSpy).toHaveBeenCalledWith(data);
+      });
+
     });
 
 
@@ -111,23 +128,30 @@ describe('Http', function() {
 
 
     it('should apply request headers set in the interceptor', function() {
-      var headerSpy = spyOn(XHRConnection.prototype, 'setRequestHeader');
-      function interceptor(request) {
-        request.headers['Client'] = 'Browser';
-        return request;
-      }
-      http.globalInterceptors.request.push(interceptor);
-      http.request(defaultConfig);
-      expect(headerSpy).toHaveBeenCalledWith('Client', 'Browser');
+      ConnectionMockBackend.forkZone().run(function() {
+        var headerSpy = spyOn(XHRConnection.prototype, 'setRequestHeader');
+        function interceptor(err, request, next) {
+          request.headers['Client'] = 'Browser';
+          next();
+        }
+        http.globalInterceptors.request.push(interceptor);
+        http.request(defaultConfig);
+        PromiseBackend.flush(true);
+        expect(headerSpy).toHaveBeenCalledWith('Client', 'Browser');
+      });
     });
 
 
     it('should call interceptRequest with the Request object', function() {
-      var spy = spyOn(http, 'interceptRequest').and.callThrough();
-      http.request({method: 'GET', url: '/something'});
-      expect(spy).toHaveBeenCalled();
-      expect(spy.calls.argsFor(0)[0].method).toBe('GET');
-      expect(spy.calls.argsFor(0)[0].url).toBe('/something');
+      ConnectionMockBackend.forkZone().run(function() {
+        var spy = spyOn(http, 'interceptRequest').and.callThrough();
+        http.request({method: 'GET', url: '/something'});
+        PromiseBackend.flush(true);
+        expect(spy).toHaveBeenCalled();
+        expect(spy.calls.argsFor(0)[1].method).toBe('GET');
+        expect(spy.calls.argsFor(0)[1].url).toBe('/something');
+      });
+
     });
 
 
@@ -140,6 +164,7 @@ describe('Http', function() {
           url: '/users',
           ConnectionClass: ConnectionMock
         }).then(spy);
+        PromiseBackend.flush(true);
         ConnectionMockBackend.flush();
         expect(spy).toHaveBeenCalled();
       });
@@ -155,7 +180,8 @@ describe('Http', function() {
           url: '/users',
           ConnectionClass: ConnectionMock
         });
-        ConnectionMockBackend.flush();
+        PromiseBackend.flush(true);
+        ConnectionMockBackend.flush(true);
         expect(spy.calls.argsFor(0)[0]).toBe('error: not found');
       });
     });
@@ -204,7 +230,7 @@ describe('Http', function() {
 
 
     it('should process the response through globalInterceptors', function() {
-      PromiseBackend.forkZone().run(function() {
+      ConnectionMockBackend.forkZone().run(function() {
         var goodSpy = jasmine.createSpy('goodSpy');
         var badSpy = jasmine.createSpy('badSpy');
         http.globalInterceptors.response.push(function(err, req, res, next) {
@@ -226,7 +252,7 @@ describe('Http', function() {
 
 
     it('should call reject if called with an error object', function() {
-      PromiseBackend.forkZone().run(function() {
+      ConnectionMockBackend.forkZone().run(function() {
         var goodSpy = jasmine.createSpy('goodSpy');
         var badSpy = jasmine.createSpy('badSpy');
         var error = {foo: 'bar'};
@@ -249,7 +275,7 @@ describe('Http', function() {
 
 
     it('should call reject if an error is ever passed to next', function() {
-      PromiseBackend.forkZone().run(function() {
+      ConnectionMockBackend.forkZone().run(function() {
         var goodSpy = jasmine.createSpy('goodSpy');
         var badSpy = jasmine.createSpy('badSpy');
         var error = {foo: 'bar'};
@@ -264,6 +290,74 @@ describe('Http', function() {
           status: 200,
           headers: new Map(),
         }).then(goodSpy, badSpy);
+        PromiseBackend.flush(true);
+        expect(badSpy).toHaveBeenCalledWith(error);
+        expect(goodSpy).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+
+  describe('.interceptRequest()', function() {
+    var sampleRequest;
+
+    beforeEach(function() {
+      sampleRequest = {
+        method: 'GET',
+        url: '/users',
+        headers: new Map(),
+        params: new Map(),
+        responseType: 'text',
+        data: ''
+      };
+    });
+
+    it('should return a promise', function() {
+      assert.type(http.interceptRequest(undefined, sampleRequest).then, Function);
+    });
+
+
+    it('should process the response through globalInterceptors', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        http.globalInterceptors.request.push(function(err, req, next) {
+          req.headers.sender = 'Jeff';
+          next();
+        });
+        http.interceptRequest(undefined, sampleRequest).then(goodSpy);
+        PromiseBackend.flush(true);
+        expect(goodSpy.calls.argsFor(0)[0].headers.sender).toBe('Jeff');
+        expect(badSpy).not.toHaveBeenCalled();
+      });
+    });
+
+
+    it('should call reject if called with an error object', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        var error = {foo: 'bar'};
+        http.globalInterceptors.request.push(function(err, req, next) {
+          next();
+        });
+        http.interceptRequest(error, sampleRequest).then(goodSpy, badSpy);
+        PromiseBackend.flush(true);
+        expect(badSpy).toHaveBeenCalledWith(error);
+        expect(goodSpy).not.toHaveBeenCalled();
+      });
+    });
+
+
+    it('should call reject if an error is ever passed to next', function() {
+      ConnectionMockBackend.forkZone().run(function() {
+        var goodSpy = jasmine.createSpy('goodSpy');
+        var badSpy = jasmine.createSpy('badSpy');
+        var error = {foo: 'bar'};
+        http.globalInterceptors.request.push(function(err, req, next) {
+          next(error);
+        });
+        http.interceptRequest(undefined, sampleRequest).then(goodSpy, badSpy);
         PromiseBackend.flush(true);
         expect(badSpy).toHaveBeenCalledWith(error);
         expect(goodSpy).not.toHaveBeenCalled();

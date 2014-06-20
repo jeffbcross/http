@@ -15,34 +15,49 @@ class Http {
   }
 
   request (config) {
-    var connection, request, promise, http = this;
-    var {method, url, params, data, headers, responseType} = config;
-    assert.type(method, assert.string);
-    assert.type(url, assert.string);
+    var connection, http = this;
+    var promise = new Promise(function(resolve, reject) {
+      var request, promise;
+      var {method, url, params, data, headers, responseType} = config;
+      assert.type(method, assert.string);
+      assert.type(url, assert.string);
 
-    request = {
-      method: method,
-      url: url,
-      data: serialize(data),
-      responseType: responseType || 'text',
-      params: new Map(),
-      headers: new Map()
-    };
-    request = this.interceptRequest(request);
-    connection = new (config.ConnectionClass || XHRConnection)();
+      connection = new (config.ConnectionClass || XHRConnection)();
 
-    Object.keys(request.headers).forEach(function(key) {
-      connection.setRequestHeader(key, request.headers[key]);
-    });
+      request = {
+        method: method,
+        url: url,
+        data: serialize(data),
+        responseType: responseType || 'text',
+        params: new Map(),
+        headers: new Map()
+      };
 
-    promise = new Promise(function(resolve, reject) {
-      connection.open(request.method, request.url);
-      connection.send(request.data);
-      connection.then(function(response) {
-        resolve(http.interceptResponse(undefined, request, response));
-      }, function(reason) {
-        reject(http.interceptResponse(reason, request));
-      });
+      function setHeaders() {
+        Object.keys(request.headers).forEach(function(key) {
+          connection.setRequestHeader(key, request.headers[key]);
+        });
+      }
+
+      function openConnection() {
+        connection.open(request.method, request.url);
+        connection.send(request.data);
+        return connection;
+      }
+
+      function onResponse (response) {
+        return http.interceptResponse(undefined, request, response);
+      }
+
+      function onResponseError (reason) {
+        return http.interceptResponse(reason, request);
+      }
+
+      http.interceptRequest(undefined, request).
+        then(setHeaders).
+        then(openConnection).
+        then(onResponse, onResponseError).
+        then(resolve, reject);
     });
 
     // TODO: Remove connection from promise.
@@ -52,11 +67,21 @@ class Http {
     return promise;
   }
 
-  interceptRequest (request:IRequest) {
-    this.globalInterceptors.request.forEach(function(fn) {
-      request = fn(request);
+  interceptRequest (err, req:IRequest) {
+    var http = this;
+
+    return new Promise(function(resolve, reject) {
+      var i = 0;
+      function callNext(error) {
+        err = error || err;
+        if (i === http.globalInterceptors.request.length) {
+          if (err) return reject(err);
+          resolve(req);
+        }
+        http.globalInterceptors.request[i++](err, req, callNext);
+      }
+      callNext();
     });
-    return request;
   }
 
   interceptResponse (err, req:IRequest, res) {
